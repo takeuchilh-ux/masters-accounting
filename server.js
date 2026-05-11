@@ -141,7 +141,7 @@ app.delete('/api/petty-cash/:id', async (req, res) => {
   try {
     const row = await pettyCash.findOne({ _id: req.params.id });
     if (row?.receipt_image) {
-      const imgPath = path.join(__dirname, 'uploads', path.basename(row.receipt_image));
+      const imgPath = path.join(uploadDir, path.basename(row.receipt_image));
       if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
     }
     await pettyCash.remove({ _id: req.params.id });
@@ -164,7 +164,7 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
 
     if (isHeic) {
       const jpegFilename = imageFilename.replace(/\.(heic|heif)$/i, '') + '_conv.jpg';
-      const jpegPath = path.join(__dirname, 'uploads', jpegFilename);
+      const jpegPath = path.join(uploadDir, jpegFilename);
       const inputBuffer = await fs.promises.readFile(imagePath);
       let outputBuffer;
       try {
@@ -180,7 +180,7 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
     } else {
       try {
         const rotated = imageFilename + '_r.jpg';
-        const rotatedPath = path.join(__dirname, 'uploads', rotated);
+        const rotatedPath = path.join(uploadDir, rotated);
         await sharp(imagePath).rotate().jpeg({ quality: 92 }).toFile(rotatedPath);
         imagePath = rotatedPath;
         imageFilename = rotated;
