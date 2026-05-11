@@ -22,8 +22,10 @@ const { pettyCash, payments, commissions, transfers, masters, initMasters } = re
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, 'uploads')),
+  destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
 });
 const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
@@ -471,5 +473,9 @@ app.get('/api/summary', async (req, res) => {
 });
 
 initMasters().then(() => {
-  app.listen(PORT, () => console.log(`会計管理アプリ起動中: http://localhost:${PORT}`));
-});
+  if (require.main === module) {
+    app.listen(PORT, () => console.log(`会計管理アプリ起動中: http://localhost:${PORT}`));
+  }
+}).catch(console.error);
+
+module.exports = app;

@@ -13,12 +13,15 @@ if (useSheets) {
   console.log('   → Google Sheetsに切り替えるには SETUP.md を参照してください');
 }
 
-// ── NeDB (ローカルDB) ────────────────────────────────────────────
-const pettyCashDB   = Datastore.create({ filename: path.join(__dirname, 'data_petty_cash.db'),  autoload: true });
-const paymentsDB    = Datastore.create({ filename: path.join(__dirname, 'data_payments.db'),    autoload: true });
-const commissionsDB = Datastore.create({ filename: path.join(__dirname, 'data_commissions.db'), autoload: true });
-const transfersDB   = Datastore.create({ filename: path.join(__dirname, 'data_transfers.db'),   autoload: true });
-const mastersDB     = Datastore.create({ filename: path.join(__dirname, 'data_masters.db'),     autoload: true });
+// ── NeDB (ローカルDB) — Google Sheetsモード時は作成しない ────────
+let pettyCashDB, paymentsDB, commissionsDB, transfersDB, mastersDB;
+if (!useSheets) {
+  pettyCashDB   = Datastore.create({ filename: path.join(__dirname, 'data_petty_cash.db'),  autoload: true });
+  paymentsDB    = Datastore.create({ filename: path.join(__dirname, 'data_payments.db'),    autoload: true });
+  commissionsDB = Datastore.create({ filename: path.join(__dirname, 'data_commissions.db'), autoload: true });
+  transfersDB   = Datastore.create({ filename: path.join(__dirname, 'data_transfers.db'),   autoload: true });
+  mastersDB     = Datastore.create({ filename: path.join(__dirname, 'data_masters.db'),     autoload: true });
+}
 
 // ── デフォルトマスタデータ ───────────────────────────────────────
 const DEFAULT_MASTERS = [
