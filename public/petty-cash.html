@@ -20,6 +20,9 @@
         <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">小口精算</a>
         <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">会計項目別支払</a>
         <a href="master.html"     class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">マスタ管理</a>
+        <span class="w-px h-5 bg-indigo-500 self-center mx-1"></span>
+        <span id="user-email" class="text-indigo-200 text-xs self-center px-1 hidden sm:block"></span>
+        <button onclick="logout()" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-900 hover:bg-red-700 transition-colors whitespace-nowrap">ログアウト</button>
       </div>
     </div>
   </nav>
@@ -512,6 +515,21 @@
     });
 
     initMasters().then(() => loadList());
+  </script>
+  <script>
+  (async function() {
+    try {
+      const res = await fetch('/api/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const { email } = await res.json();
+      const el = document.getElementById('user-email');
+      if (el) el.textContent = email;
+    } catch { window.location.href = '/login.html'; }
+  })();
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+  }
   </script>
 </body>
 </html>

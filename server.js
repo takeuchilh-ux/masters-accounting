@@ -2,6 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const Anthropic = require('@anthropic-ai/sdk');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
@@ -22,6 +25,29 @@ const { pettyCash, payments, commissions, transfers, masters, initMasters } = re
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ── 認証設定 ─────────────────────────────────────────────────────
+const JWT_SECRET = process.env.JWT_SECRET || 'masters-accounting-secret-key-2026';
+
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password + JWT_SECRET).digest('hex');
+}
+
+const USERS = [
+  { email: 'takeuchi.lh@gmail.com',          passwordHash: hashPassword('0000') },
+  { email: 'y.nakajima@master-staff.co.jp',  passwordHash: hashPassword('1111') },
+];
+
+function requireAuth(req, res, next) {
+  const token = req.cookies?.auth_token;
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+}
+
 const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
@@ -30,9 +56,37 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ── 認証API ──────────────────────────────────────────────────────
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  const user = USERS.find(u => u.email === email && u.passwordHash === hashPassword(password));
+  if (!user) return res.status(401).json({ error: 'メールアドレスまたはパスワードが違います' });
+  const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
+    secure: !!process.env.VERCEL,
+  });
+  res.json({ ok: true, email: user.email });
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('auth_token');
+  res.json({ ok: true });
+});
+
+app.get('/api/me', requireAuth, (req, res) => {
+  res.json({ email: req.user.email });
+});
+
+// 以降のAPIはすべて認証必須
+app.use('/api', requireAuth);
 
 function buildQuery(filters) {
   const q = {};
