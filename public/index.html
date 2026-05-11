@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ダッシュボード | 会計管理システム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <nav class="bg-indigo-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span class="text-xl font-bold">会計管理システム</span>
+        <span class="text-indigo-200 text-sm">マスターズスタッフ株式会社</span>
+      </div>
+      <div class="flex gap-1">
+        <a href="index.html"      class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">ダッシュボード</a>
+        <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">小口精算</a>
+        <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">会計項目別支払</a>
+        <a href="master.html"     class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">マスタ管理</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">ダッシュボード</h1>
+
+      <!-- フィルター -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-600 whitespace-nowrap">事業所</label>
+          <select id="filter-store" class="form-select text-sm py-1.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <option value="">全て</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-600 whitespace-nowrap">銀行口座</label>
+          <select id="filter-bank" class="form-select text-sm py-1.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <option value="">全て</option>
+          </select>
+        </div>
+        <button onclick="loadSummary()" class="btn-primary text-sm py-1.5 px-4">表示</button>
+      </div>
+    </div>
+
+    <!-- サマリーカード Row 1 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-blue-600 uppercase tracking-wide">小口精算</span>
+          <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800" id="petty-count">-</p>
+        <p class="text-xs text-gray-500 mt-1">合計: <span class="font-semibold text-gray-700" id="petty-total">-</span></p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-green-600 uppercase tracking-wide">支払明細</span>
+          <div class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800" id="payment-count">-</p>
+        <div class="flex gap-3 mt-1">
+          <p class="text-xs text-gray-500">出金: <span class="font-semibold text-red-600" id="debit-total">-</span></p>
+          <p class="text-xs text-gray-500">入金: <span class="font-semibold text-green-600" id="credit-total">-</span></p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wide">業務委託料明細</span>
+          <div class="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800" id="commission-count">-</p>
+        <div class="flex gap-3 mt-1">
+          <p class="text-xs text-gray-500">請求合計: <span class="font-semibold text-indigo-600" id="commission-total">-</span></p>
+          <p class="text-xs text-gray-500">入金: <span class="font-semibold text-green-600" id="commission-received">-</span></p>
+        </div>
+      </div>
+    </div>
+    <!-- サマリーカード Row 2 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-purple-600 uppercase tracking-wide">資金移動明細</span>
+          <div class="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center">
+            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-800" id="transfer-count">-</p>
+        <p class="text-xs text-gray-500 mt-1">移動合計: <span class="font-semibold text-purple-600" id="transfer-total">-</span></p>
+      </div>
+      <div class="md:col-span-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-100 p-5 flex items-center gap-4">
+        <div class="flex-1">
+          <p class="text-xs font-semibold text-indigo-600 mb-1">フィルター中: <span id="filter-label" class="text-gray-600 font-normal">全データ</span></p>
+          <p class="text-xs text-gray-500">事業所・銀行口座でフィルターして各集計を絞り込めます</p>
+        </div>
+        <button onclick="loadSummary()" class="btn-primary text-sm py-1.5 px-4 whitespace-nowrap">再集計</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- 会計科目別集計 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">会計科目別 出金集計 TOP10</h2>
+        <div id="by-account-chart" class="space-y-3"></div>
+        <p id="no-account-msg" class="text-gray-400 text-sm text-center py-4 hidden">データがありません</p>
+      </div>
+
+      <!-- 事業所別集計（小口精算） -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">事業所別 小口精算集計</h2>
+        <div id="by-store-chart" class="space-y-3"></div>
+        <p id="no-store-msg" class="text-gray-400 text-sm text-center py-4 hidden">データがありません</p>
+      </div>
+    </div>
+
+    <!-- 銀行口座別集計（支払明細） -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold text-gray-700 mb-4">銀行口座別 支払明細集計</h2>
+      <div id="by-bank-chart" class="space-y-4"></div>
+      <p id="no-bank-msg" class="text-gray-400 text-sm text-center py-4 hidden">データがありません</p>
+    </div>
+
+    <!-- クイックリンク -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <a href="petty-cash.html" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-indigo-700">小口精算入力</h3>
+            <p class="text-sm text-gray-500">レシート写真から自動入力・手動入力</p>
+          </div>
+        </div>
+      </a>
+      <a href="payments.html" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-green-700">会計項目別支払入力</h3>
+            <p class="text-sm text-gray-500">支払明細の入力・管理・CSV出力</p>
+          </div>
+        </div>
+      </a>
+      <a href="master.html" class="block bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-indigo-300 transition-all group">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-purple-700">マスタ管理</h3>
+            <p class="text-sm text-gray-500">事業所・勘定科目・支払方法の管理</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <script>
+    async function loadMasterOptions() {
+      const [stores, banks] = await Promise.all([
+        fetch('/api/masters?type=store').then(r => r.json()),
+        fetch('/api/masters?type=bank_account').then(r => r.json()),
+      ]);
+      const storeEl = document.getElementById('filter-store');
+      stores.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.value; o.textContent = s.value;
+        storeEl.appendChild(o);
+      });
+      const bankEl = document.getElementById('filter-bank');
+      banks.forEach(b => {
+        const o = document.createElement('option');
+        o.value = b.value; o.textContent = b.value;
+        bankEl.appendChild(o);
+      });
+    }
+
+    function barRow(label, value, max, colorClass) {
+      const pct = max > 0 ? Math.round(value / max * 100) : 0;
+      return `
+        <div class="flex items-center gap-3">
+          <span class="w-36 text-sm text-gray-600 truncate" title="${label}">${label}</span>
+          <div class="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+            <div class="${colorClass} h-5 rounded-full flex items-center justify-end pr-2 transition-all" style="width:${Math.max(pct,2)}%">
+              <span class="text-white text-xs font-medium">${pct}%</span>
+            </div>
+          </div>
+          <span class="w-28 text-right text-sm font-medium text-gray-700">¥${Math.round(value).toLocaleString()}</span>
+        </div>`;
+    }
+
+    async function loadSummary() {
+      const store = document.getElementById('filter-store').value;
+      const bank  = document.getElementById('filter-bank').value;
+      const params = new URLSearchParams();
+      if (store) params.set('store', store);
+      if (bank)  params.set('bank_account', bank);
+      const qs = params.toString() ? '?' + params.toString() : '';
+
+      try {
+        const data = await fetch('/api/summary' + qs).then(r => r.json());
+
+        document.getElementById('petty-count').textContent       = data.pettyCashCount.toLocaleString() + ' 件';
+        document.getElementById('petty-total').textContent       = '¥' + Math.round(data.pettyCashTotal).toLocaleString();
+        document.getElementById('payment-count').textContent     = data.paymentsCount.toLocaleString() + ' 件';
+        document.getElementById('debit-total').textContent       = '¥' + Math.round(data.debitTotal).toLocaleString();
+        document.getElementById('credit-total').textContent      = '¥' + Math.round(data.creditTotal).toLocaleString();
+        document.getElementById('commission-count').textContent  = data.commissionsCount.toLocaleString() + ' 件';
+        document.getElementById('commission-total').textContent  = '¥' + Math.round(data.commissionTotal).toLocaleString();
+        document.getElementById('commission-received').textContent = '¥' + Math.round(data.commissionReceived).toLocaleString();
+        document.getElementById('transfer-count').textContent    = data.transfersCount.toLocaleString() + ' 件';
+        document.getElementById('transfer-total').textContent    = '¥' + Math.round(data.transferTotal).toLocaleString();
+        // フィルターラベル更新
+        const store = document.getElementById('filter-store').value;
+        const bank  = document.getElementById('filter-bank').value;
+        document.getElementById('filter-label').textContent =
+          store && bank ? `${store} × ${bank}` : store || bank || '全データ';
+
+        // 会計科目別
+        const accChart = document.getElementById('by-account-chart');
+        const accMsg   = document.getElementById('no-account-msg');
+        accChart.innerHTML = '';
+        if (!data.byAccount || data.byAccount.length === 0) {
+          accMsg.classList.remove('hidden');
+        } else {
+          accMsg.classList.add('hidden');
+          const max = data.byAccount[0].total;
+          data.byAccount.forEach(row => {
+            accChart.innerHTML += barRow(row.account_category, row.total, max, 'bg-indigo-500');
+          });
+        }
+
+        // 事業所別
+        const storeChart = document.getElementById('by-store-chart');
+        const storeMsg   = document.getElementById('no-store-msg');
+        storeChart.innerHTML = '';
+        if (!data.byStore || data.byStore.length === 0) {
+          storeMsg.classList.remove('hidden');
+        } else {
+          storeMsg.classList.add('hidden');
+          const max = Math.max(...data.byStore.map(r => r.total));
+          data.byStore.forEach(row => {
+            storeChart.innerHTML += barRow(row.store || '未設定', row.total, max, 'bg-blue-500');
+          });
+        }
+
+        // 銀行口座別
+        const bankChart = document.getElementById('by-bank-chart');
+        const bankMsg   = document.getElementById('no-bank-msg');
+        bankChart.innerHTML = '';
+        if (!data.byBank || data.byBank.length === 0) {
+          bankMsg.classList.remove('hidden');
+        } else {
+          bankMsg.classList.add('hidden');
+          const maxVal = Math.max(...data.byBank.flatMap(r => [r.debit || 0, r.credit || 0]));
+          data.byBank.forEach(row => {
+            bankChart.innerHTML += `
+              <div class="border border-gray-100 rounded-lg p-3">
+                <p class="text-sm font-semibold text-gray-700 mb-2">${row.bank_account || '未設定'}</p>
+                <div class="space-y-2">
+                  ${row.debit > 0  ? barRow('出金', row.debit,  maxVal, 'bg-red-400')     : ''}
+                  ${row.credit > 0 ? barRow('入金', row.credit, maxVal, 'bg-emerald-400') : ''}
+                </div>
+                <p class="text-xs text-gray-400 mt-2">${row.count} 件</p>
+              </div>`;
+          });
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    loadMasterOptions().then(() => loadSummary());
+  </script>
+</body>
+</html>

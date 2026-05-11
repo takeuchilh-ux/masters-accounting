@@ -1,0 +1,6 @@
+.env
+node_modules/
+uploads/
+*.db
+*.log
+google-credentials.json

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会計項目別支払 | 会計管理システム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <nav class="bg-indigo-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span class="text-xl font-bold">会計管理システム</span>
+      </div>
+      <div class="flex gap-1">
+        <a href="index.html"      class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">ダッシュボード</a>
+        <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">小口精算</a>
+        <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">会計項目別支払</a>
+        <a href="master.html"     class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">マスタ管理</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold text-gray-800">会計項目別支払集計表</h1>
+      <button onclick="openModal()" class="btn-primary flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        新規入力
+      </button>
+    </div>
+
+    <!-- タブナビゲーション -->
+    <div class="flex gap-1 mb-6 border-b border-gray-200">
+      <button onclick="switchTab('payment')"    id="tab-payment"    class="tab-btn active px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">支払明細</button>
+      <button onclick="switchTab('commission')" id="tab-commission" class="tab-btn px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">業務委託料明細</button>
+      <button onclick="switchTab('transfer')"   id="tab-transfer"   class="tab-btn px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">資金移動明細</button>
+    </div>
+
+    <!-- ======== 支払明細 ======== -->
+    <div id="section-payment">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div>
+            <label class="form-label">銀行口座</label>
+            <select id="pf-bank" class="form-input" onchange="loadPayments()"><option value="">すべて</option></select>
+          </div>
+          <div>
+            <label class="form-label">会計科目</label>
+            <select id="pf-account" class="form-input" onchange="loadPayments()"><option value="">すべて</option></select>
+          </div>
+          <div>
+            <label class="form-label">日付 From</label>
+            <input type="date" id="pf-from" class="form-input" onchange="loadPayments()">
+          </div>
+          <div>
+            <label class="form-label">日付 To</label>
+            <input type="date" id="pf-to" class="form-input" onchange="loadPayments()">
+          </div>
+          <div>
+            <label class="form-label">検索</label>
+            <input type="text" id="pf-q" class="form-input" placeholder="支払先・摘要..." oninput="loadPayments()">
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="flex items-center gap-4 flex-wrap text-sm text-gray-500">
+            <span>件数: <span id="p-count" class="font-semibold text-gray-700">0</span> 件</span>
+            <span>出金合計: <span id="p-debit"  class="font-semibold text-red-600">¥0</span></span>
+            <span>入金合計: <span id="p-credit" class="font-semibold text-green-600">¥0</span></span>
+          </div>
+          <button onclick="exportCsv('payment')" class="btn-secondary text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV出力
+          </button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-3 py-3 text-left text-gray-600">No.</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払日</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">銀行口座</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払先</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払内容（摘要）</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">出金額（円）</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">入金額（円）</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">会計科目</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払方法</th>
+              <th class="px-3 py-3 text-center text-gray-600">集計月</th>
+              <th class="px-3 py-3 text-center text-gray-600">操作</th>
+            </tr>
+          </thead>
+          <tbody id="p-body"><tr><td colspan="11" class="text-center py-10 text-gray-400">読み込み中...</td></tr></tbody>
+          <tfoot>
+            <tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+              <td colspan="5" class="px-3 py-3 text-sm text-gray-600">合計</td>
+              <td class="px-3 py-3 text-right text-red-600"   id="p-foot-debit">¥0</td>
+              <td class="px-3 py-3 text-right text-green-600" id="p-foot-credit">¥0</td>
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======== 業務委託料明細 ======== -->
+    <div id="section-commission" class="hidden">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="form-label">請求月 From</label>
+            <input type="month" id="cf-from" class="form-input" onchange="loadCommissions()">
+          </div>
+          <div>
+            <label class="form-label">請求月 To</label>
+            <input type="month" id="cf-to" class="form-input" onchange="loadCommissions()">
+          </div>
+          <div>
+            <label class="form-label">請求先</label>
+            <input type="text" id="cf-client" class="form-input" placeholder="請求先で絞込..." oninput="loadCommissions()">
+          </div>
+          <div class="flex items-end">
+            <button onclick="exportCsv('commission')" class="btn-secondary text-sm flex items-center gap-1 w-full justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV出力
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+          <span>件数: <span id="c-count" class="font-semibold text-gray-700">0</span> 件</span>
+          <span>合計請求額: <span id="c-total"    class="font-semibold text-indigo-600">¥0</span></span>
+          <span>入金合計: <span id="c-received" class="font-semibold text-green-600">¥0</span></span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-3 py-3 text-left text-gray-600">No.</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">請求月</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">入金日</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">請求先</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">対象期間</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">請求金額（税抜）</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">消費税額</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">合計請求額</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">入金額</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払方法</th>
+              <th class="px-3 py-3 text-left text-gray-600">備考</th>
+              <th class="px-3 py-3 text-center text-gray-600">操作</th>
+            </tr>
+          </thead>
+          <tbody id="c-body"><tr><td colspan="12" class="text-center py-10 text-gray-400">読み込み中...</td></tr></tbody>
+          <tfoot>
+            <tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+              <td colspan="5" class="px-3 py-3 text-sm text-gray-600">合計</td>
+              <td class="px-3 py-3 text-right text-gray-700" id="c-foot-invoice">¥0</td>
+              <td class="px-3 py-3 text-right text-gray-700" id="c-foot-tax">¥0</td>
+              <td class="px-3 py-3 text-right text-indigo-600" id="c-foot-total">¥0</td>
+              <td class="px-3 py-3 text-right text-green-600" id="c-foot-received">¥0</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======== 資金移動明細 ======== -->
+    <div id="section-transfer" class="hidden">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="form-label">日付 From</label>
+            <input type="date" id="tf-from" class="form-input" onchange="loadTransfers()">
+          </div>
+          <div>
+            <label class="form-label">日付 To</label>
+            <input type="date" id="tf-to" class="form-input" onchange="loadTransfers()">
+          </div>
+          <div></div>
+          <div class="flex items-end">
+            <button onclick="exportCsv('transfer')" class="btn-secondary text-sm flex items-center gap-1 w-full justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>CSV出力
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
+          <span>件数: <span id="t-count" class="font-semibold text-gray-700">0</span> 件</span>
+          <span>移動金額合計: <span id="t-total" class="font-semibold text-indigo-600">¥0</span></span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">日付</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">移動元口座</th>
+              <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">移動先口座</th>
+              <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">金額（円）</th>
+              <th class="px-3 py-3 text-left text-gray-600">目的</th>
+              <th class="px-3 py-3 text-left text-gray-600">備考</th>
+              <th class="px-3 py-3 text-center text-gray-600">操作</th>
+            </tr>
+          </thead>
+          <tbody id="t-body"><tr><td colspan="7" class="text-center py-10 text-gray-400">読み込み中...</td></tr></tbody>
+          <tfoot>
+            <tr class="border-t-2 border-gray-300 bg-gray-50 font-semibold">
+              <td colspan="3" class="px-3 py-3 text-sm text-gray-600">合計</td>
+              <td class="px-3 py-3 text-right text-indigo-600" id="t-foot-total">¥0</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======== モーダル ======== -->
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800" id="modal-title">新規入力</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto" style="max-height:75vh">
+
+        <!-- === 支払明細フォーム === -->
+        <form id="form-payment" class="hidden" onsubmit="submitPayment(event)">
+          <input type="hidden" id="p-edit-id">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">No.</label>
+              <input type="number" id="p-no" class="form-input" placeholder="自動">
+            </div>
+            <div>
+              <label class="form-label">支払日 <span class="text-red-500">*</span></label>
+              <input type="date" id="p-date" class="form-input" required>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">銀行口座 <span class="text-red-500">*</span></label>
+            <input type="text" id="p-bank" class="form-input" list="dl-bank" required placeholder="選択または入力">
+            <datalist id="dl-bank"></datalist>
+            <button type="button" id="btn-add-p-bank" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">支払先 <span class="text-red-500">*</span></label>
+              <input type="text" id="p-payee" class="form-input" required placeholder="例：横浜銀行">
+            </div>
+            <div>
+              <label class="form-label">支払内容（摘要）<span class="text-red-500">*</span></label>
+              <input type="text" id="p-desc" class="form-input" required placeholder="例：借入金返済">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">出金額（円）</label>
+              <input type="number" id="p-debit" class="form-input" min="0" step="1" placeholder="0">
+            </div>
+            <div>
+              <label class="form-label">入金額（円）</label>
+              <input type="number" id="p-credit" class="form-input" min="0" step="1" placeholder="0">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">会計科目 <span class="text-red-500">*</span></label>
+              <input type="text" id="p-account" class="form-input" list="dl-account" required placeholder="選択または入力">
+              <datalist id="dl-account"></datalist>
+              <button type="button" id="btn-add-p-account" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+            </div>
+            <div>
+              <label class="form-label">支払方法</label>
+              <input type="text" id="p-method" class="form-input" list="dl-method" placeholder="選択または入力">
+              <datalist id="dl-method"></datalist>
+              <button type="button" id="btn-add-p-method" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">集計月</label>
+              <input type="month" id="p-month" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">備考</label>
+              <input type="text" id="p-notes" class="form-input" placeholder="任意">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">キー</label>
+              <input type="text" id="p-key" class="form-input bg-gray-50" placeholder="支払先|摘要 で自動生成">
+            </div>
+            <div>
+              <label class="form-label">チェック</label>
+              <select id="p-check" class="form-input">
+                <option value="">未確認</option>
+                <option>確認済</option>
+                <option>要確認</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button type="button" onclick="closeModal()" class="btn-secondary">キャンセル</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+
+        <!-- === 業務委託料明細フォーム === -->
+        <form id="form-commission" class="hidden" onsubmit="submitCommission(event)">
+          <input type="hidden" id="c-edit-id">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">No.</label>
+              <input type="number" id="c-no" class="form-input" placeholder="自動">
+            </div>
+            <div>
+              <label class="form-label">請求月 <span class="text-red-500">*</span></label>
+              <input type="month" id="c-month" class="form-input" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">入金日</label>
+              <input type="date" id="c-received-date" class="form-input">
+            </div>
+            <div>
+              <label class="form-label">請求先 <span class="text-red-500">*</span></label>
+              <input type="text" id="c-client" class="form-input" required placeholder="例：藤沢市民病院">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">対象期間</label>
+            <input type="text" id="c-period" class="form-input" placeholder="例：2026/4/01〜2026/4/30">
+          </div>
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="form-label">請求金額（税抜）</label>
+              <input type="number" id="c-invoice" class="form-input" min="0" step="1" placeholder="0" oninput="calcCommission()">
+            </div>
+            <div>
+              <label class="form-label">消費税額</label>
+              <input type="number" id="c-tax" class="form-input" min="0" step="1" placeholder="0" oninput="calcCommission()">
+            </div>
+            <div>
+              <label class="form-label">合計請求額</label>
+              <input type="number" id="c-total-amount" class="form-input bg-gray-50" min="0" step="1" placeholder="自動計算" readonly>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">入金額</label>
+              <input type="number" id="c-received" class="form-input" min="0" step="1" placeholder="0">
+            </div>
+            <div>
+              <label class="form-label">支払方法</label>
+              <input type="text" id="c-method" class="form-input" list="dl-c-method" placeholder="例：振込">
+              <datalist id="dl-c-method"></datalist>
+              <button type="button" id="btn-add-c-method" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">備考</label>
+            <input type="text" id="c-notes" class="form-input" placeholder="任意">
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button type="button" onclick="closeModal()" class="btn-secondary">キャンセル</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+
+        <!-- === 資金移動明細フォーム === -->
+        <form id="form-transfer" class="hidden" onsubmit="submitTransfer(event)">
+          <input type="hidden" id="t-edit-id">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">日付 <span class="text-red-500">*</span></label>
+              <input type="date" id="t-date" class="form-input" required>
+            </div>
+            <div>
+              <label class="form-label">金額（円）<span class="text-red-500">*</span></label>
+              <input type="number" id="t-amount" class="form-input" min="0" step="1" required placeholder="0">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">移動元口座 <span class="text-red-500">*</span></label>
+              <input type="text" id="t-from" class="form-input" list="dl-t-from" required placeholder="選択または入力">
+              <datalist id="dl-t-from"></datalist>
+              <button type="button" id="btn-add-t-from" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+            </div>
+            <div>
+              <label class="form-label">移動先口座 <span class="text-red-500">*</span></label>
+              <input type="text" id="t-to" class="form-input" list="dl-t-to" required placeholder="選択または入力">
+              <datalist id="dl-t-to"></datalist>
+              <button type="button" id="btn-add-t-to" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">目的</label>
+              <input type="text" id="t-purpose" class="form-input" placeholder="例：小口精算補充">
+            </div>
+            <div>
+              <label class="form-label">備考</label>
+              <input type="text" id="t-notes" class="form-input" placeholder="任意">
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button type="button" onclick="closeModal()" class="btn-secondary">キャンセル</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tab-btn { color: #6b7280; border-color: transparent; }
+    .tab-btn:hover { color: #4f46e5; }
+    .tab-btn.active { color: #4f46e5; border-color: #4f46e5; }
+  </style>
+
+  <script>
+    let currentTab = 'payment';
+    let masterCache = {};
+
+    // ── タブ切替 ─────────────────────────────────────────────────
+    function switchTab(tab) {
+      currentTab = tab;
+      ['payment','commission','transfer'].forEach(t => {
+        document.getElementById('section-' + t).classList.toggle('hidden', t !== tab);
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+      });
+      const titles = { payment:'支払明細', commission:'業務委託料明細', transfer:'資金移動明細' };
+      if (tab === 'payment')    loadPayments();
+      if (tab === 'commission') loadCommissions();
+      if (tab === 'transfer')   loadTransfers();
+    }
+
+    // ── マスタ ───────────────────────────────────────────────────
+    async function loadMaster(type) {
+      if (masterCache[type]) return masterCache[type];
+      const data = await fetch('/api/masters?type=' + type).then(r => r.json());
+      masterCache[type] = data.map(d => d.value);
+      return masterCache[type];
+    }
+
+    function fillDatalist(listId, values) {
+      const dl = document.getElementById(listId);
+      if (dl) dl.innerHTML = values.map(v => `<option value="${v.replace(/"/g,'&quot;')}">`).join('');
+    }
+
+    function initCombobox(inputId, listId, btnId, masterType) {
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      if (!input || !btn) return;
+      input.addEventListener('input', () => {
+        const val = input.value.trim();
+        const opts = masterCache[masterType] || [];
+        const show = val && !opts.includes(val);
+        btn.classList.toggle('hidden', !show);
+        if (show) btn.textContent = `＋「${val}」をマスタに追加`;
+      });
+      btn.addEventListener('click', async () => {
+        const val = input.value.trim(); if (!val) return;
+        await fetch('/api/masters', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type: masterType, value: val }) });
+        delete masterCache[masterType];
+        fillDatalist(listId, await loadMaster(masterType));
+        btn.classList.add('hidden');
+        showToast(`「${val}」をマスタに追加しました`, 'success');
+      });
+    }
+
+    async function initMasters() {
+      const [banks, accounts, methods] = await Promise.all([
+        loadMaster('bank_account'), loadMaster('account_category'), loadMaster('payment_method')
+      ]);
+      // 支払明細フォーム
+      fillDatalist('dl-bank',    banks);
+      fillDatalist('dl-account', accounts);
+      fillDatalist('dl-method',  methods);
+      // 業務委託料フォーム
+      fillDatalist('dl-c-method', methods);
+      // 資金移動フォーム
+      fillDatalist('dl-t-from', banks);
+      fillDatalist('dl-t-to',   banks);
+
+      // フィルター select
+      const bankSel = document.getElementById('pf-bank');
+      const accSel  = document.getElementById('pf-account');
+      banks.forEach(b    => bankSel.innerHTML += `<option>${b}</option>`);
+      accounts.forEach(a => accSel.innerHTML  += `<option>${a}</option>`);
+
+      // コンボボックス初期化
+      initCombobox('p-bank',    'dl-bank',     'btn-add-p-bank',    'bank_account');
+      initCombobox('p-account', 'dl-account',  'btn-add-p-account', 'account_category');
+      initCombobox('p-method',  'dl-method',   'btn-add-p-method',  'payment_method');
+      initCombobox('c-method',  'dl-c-method', 'btn-add-c-method',  'payment_method');
+      initCombobox('t-from',    'dl-t-from',   'btn-add-t-from',    'bank_account');
+      initCombobox('t-to',      'dl-t-to',     'btn-add-t-to',      'bank_account');
+    }
+
+    // ── モーダル ─────────────────────────────────────────────────
+    const tabTitles = { payment:'支払明細', commission:'業務委託料明細', transfer:'資金移動明細' };
+
+    function openModal() {
+      document.getElementById('modal-title').textContent = tabTitles[currentTab] + ' 新規入力';
+      ['payment','commission','transfer'].forEach(t => {
+        document.getElementById('form-' + t).classList.toggle('hidden', t !== currentTab);
+        document.getElementById('form-' + t).reset();
+      });
+      // デフォルト値
+      if (currentTab === 'payment') {
+        document.getElementById('p-edit-id').value = '';
+        document.getElementById('p-date').value  = today();
+        document.getElementById('p-month').value = today().slice(0,7);
+      }
+      if (currentTab === 'commission') {
+        document.getElementById('c-edit-id').value = '';
+        document.getElementById('c-month').value = today().slice(0,7);
+      }
+      if (currentTab === 'transfer') {
+        document.getElementById('t-edit-id').value = '';
+        document.getElementById('t-date').value = today();
+      }
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      document.getElementById('modal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+    document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+    function today() { return new Date().toISOString().slice(0,10); }
+
+    // ── 支払明細 ─────────────────────────────────────────────────
+    async function loadPayments() {
+      const params = new URLSearchParams();
+      const bank    = document.getElementById('pf-bank').value;
+      const account = document.getElementById('pf-account').value;
+      const from    = document.getElementById('pf-from').value;
+      const to      = document.getElementById('pf-to').value;
+      const q       = document.getElementById('pf-q').value;
+      if (bank)    params.set('bank_account', bank);
+      if (account) params.set('account_category', account);
+      if (from)    params.set('from', from);
+      if (to)      params.set('to', to);
+      if (q)       params.set('q', q);
+      try {
+        const data = await fetch('/api/payments?' + params).then(r => r.json());
+        const tbody = document.getElementById('p-body');
+        let debit = 0, credit = 0;
+        document.getElementById('p-count').textContent = data.length;
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center py-10 text-gray-400">データがありません</td></tr>';
+          setPaymentTotals(0,0); return;
+        }
+        tbody.innerHTML = data.map(r => {
+          debit  += r.debit_amount  || 0;
+          credit += r.credit_amount || 0;
+          return `<tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-3 py-2.5 text-gray-500">${r.no ?? '-'}</td>
+            <td class="px-3 py-2.5 text-gray-700 whitespace-nowrap">${r.payment_date ?? '-'}</td>
+            <td class="px-3 py-2.5 text-xs text-gray-500 max-w-[100px] truncate">${r.bank_account ?? '-'}</td>
+            <td class="px-3 py-2.5 text-gray-700 max-w-[110px] truncate">${r.payee ?? '-'}</td>
+            <td class="px-3 py-2.5 text-gray-600 max-w-[150px] truncate">${r.description ?? '-'}</td>
+            <td class="px-3 py-2.5 text-right font-medium ${r.debit_amount  ? 'text-red-600'   : 'text-gray-300'}">${r.debit_amount  ? '¥'+Math.round(r.debit_amount).toLocaleString()  : '-'}</td>
+            <td class="px-3 py-2.5 text-right font-medium ${r.credit_amount ? 'text-green-600' : 'text-gray-300'}">${r.credit_amount ? '¥'+Math.round(r.credit_amount).toLocaleString() : '-'}</td>
+            <td class="px-3 py-2.5"><span class="tag tag-blue">${r.account_category ?? '-'}</span></td>
+            <td class="px-3 py-2.5 text-xs text-gray-600">${r.payment_method ?? '-'}</td>
+            <td class="px-3 py-2.5 text-center text-xs text-gray-500">${r.summary_month ?? '-'}</td>
+            <td class="px-3 py-2.5 text-center"><div class="flex gap-1 justify-center">
+              <button onclick="editPayment('${r._id}')" class="btn-edit">編集</button>
+              <button onclick="deletePayment('${r._id}')" class="btn-danger">削除</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+        setPaymentTotals(debit, credit);
+      } catch(e) { showToast('読み込みエラー', 'error'); }
+    }
+
+    function setPaymentTotals(d, c) {
+      document.getElementById('p-debit').textContent       = '¥'+Math.round(d).toLocaleString();
+      document.getElementById('p-credit').textContent      = '¥'+Math.round(c).toLocaleString();
+      document.getElementById('p-foot-debit').textContent  = '¥'+Math.round(d).toLocaleString();
+      document.getElementById('p-foot-credit').textContent = '¥'+Math.round(c).toLocaleString();
+    }
+
+    async function editPayment(id) {
+      currentTab = 'payment';
+      document.getElementById('modal-title').textContent = '支払明細 編集';
+      ['payment','commission','transfer'].forEach(t => document.getElementById('form-'+t).classList.toggle('hidden', t !== 'payment'));
+      const r = await fetch('/api/payments/' + id).then(res => res.json());
+      document.getElementById('p-edit-id').value = r._id;
+      document.getElementById('p-no').value      = r.no ?? '';
+      document.getElementById('p-date').value    = r.payment_date ?? '';
+      document.getElementById('p-bank').value    = r.bank_account ?? '';
+      document.getElementById('p-payee').value   = r.payee ?? '';
+      document.getElementById('p-desc').value    = r.description ?? '';
+      document.getElementById('p-debit').value   = r.debit_amount ?? '';
+      document.getElementById('p-credit').value  = r.credit_amount ?? '';
+      document.getElementById('p-account').value = r.account_category ?? '';
+      document.getElementById('p-method').value  = r.payment_method ?? '';
+      document.getElementById('p-notes').value   = r.notes ?? '';
+      document.getElementById('p-month').value   = r.summary_month ?? '';
+      document.getElementById('p-key').value     = r.key_code ?? '';
+      document.getElementById('p-check').value   = r.check_status ?? '';
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    async function deletePayment(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      await fetch('/api/payments/' + id, { method: 'DELETE' });
+      showToast('削除しました', 'success'); loadPayments();
+    }
+
+    async function submitPayment(e) {
+      e.preventDefault();
+      const id = document.getElementById('p-edit-id').value;
+      const payee = document.getElementById('p-payee').value;
+      const desc  = document.getElementById('p-desc').value;
+      const payload = {
+        no: document.getElementById('p-no').value || null,
+        payment_date:     document.getElementById('p-date').value,
+        bank_account:     document.getElementById('p-bank').value,
+        payee, description: desc,
+        debit_amount:     parseFloat(document.getElementById('p-debit').value)  || 0,
+        credit_amount:    parseFloat(document.getElementById('p-credit').value) || 0,
+        account_category: document.getElementById('p-account').value,
+        payment_method:   document.getElementById('p-method').value,
+        notes:            document.getElementById('p-notes').value,
+        summary_month:    document.getElementById('p-month').value,
+        key_code:         document.getElementById('p-key').value || `${payee}|${desc}`,
+        check_status:     document.getElementById('p-check').value,
+      };
+      const method = id ? 'PUT' : 'POST';
+      const url    = id ? '/api/payments/' + id : '/api/payments';
+      await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      showToast(id ? '更新しました' : '保存しました', 'success');
+      closeModal(); loadPayments();
+    }
+
+    // ── 業務委託料明細 ───────────────────────────────────────────
+    function calcCommission() {
+      const inv = parseFloat(document.getElementById('c-invoice').value) || 0;
+      const tax = parseFloat(document.getElementById('c-tax').value) || Math.round(inv * 0.1);
+      if (!document.getElementById('c-tax').value && inv) {
+        document.getElementById('c-tax').value = Math.round(inv * 0.1);
+      }
+      const taxVal = parseFloat(document.getElementById('c-tax').value) || 0;
+      document.getElementById('c-total-amount').value = inv + taxVal;
+    }
+
+    async function loadCommissions() {
+      const params = new URLSearchParams();
+      const from   = document.getElementById('cf-from').value;
+      const to     = document.getElementById('cf-to').value;
+      const client = document.getElementById('cf-client').value;
+      if (from)   params.set('from', from);
+      if (to)     params.set('to', to);
+      if (client) params.set('client', client);
+      try {
+        const data = await fetch('/api/commissions?' + params).then(r => r.json());
+        const tbody = document.getElementById('c-body');
+        document.getElementById('c-count').textContent = data.length;
+        let invoice = 0, tax = 0, total = 0, received = 0;
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="12" class="text-center py-10 text-gray-400">データがありません</td></tr>';
+          setCommissionTotals(0,0,0,0); return;
+        }
+        tbody.innerHTML = data.map(r => {
+          invoice  += r.invoice_amount  || 0;
+          tax      += r.tax_amount      || 0;
+          total    += r.total_amount    || 0;
+          received += r.received_amount || 0;
+          const diff = (r.total_amount || 0) - (r.received_amount || 0);
+          return `<tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-3 py-2.5 text-gray-500">${r.no ?? '-'}</td>
+            <td class="px-3 py-2.5 whitespace-nowrap">${r.invoice_month ?? '-'}</td>
+            <td class="px-3 py-2.5 whitespace-nowrap">${r.received_date ?? '-'}</td>
+            <td class="px-3 py-2.5 font-medium text-gray-700">${r.client ?? '-'}</td>
+            <td class="px-3 py-2.5 text-xs text-gray-500">${r.period ?? '-'}</td>
+            <td class="px-3 py-2.5 text-right">${r.invoice_amount  ? '¥'+Math.round(r.invoice_amount).toLocaleString()  : '-'}</td>
+            <td class="px-3 py-2.5 text-right text-gray-500">${r.tax_amount     ? '¥'+Math.round(r.tax_amount).toLocaleString()      : '-'}</td>
+            <td class="px-3 py-2.5 text-right font-medium text-indigo-600">${r.total_amount   ? '¥'+Math.round(r.total_amount).toLocaleString()   : '-'}</td>
+            <td class="px-3 py-2.5 text-right font-medium text-green-600">${r.received_amount ? '¥'+Math.round(r.received_amount).toLocaleString() : '-'}</td>
+            <td class="px-3 py-2.5 text-xs">${r.payment_method ?? '-'}</td>
+            <td class="px-3 py-2.5 text-xs text-gray-500 max-w-[100px] truncate">${r.notes ?? ''}</td>
+            <td class="px-3 py-2.5 text-center"><div class="flex gap-1 justify-center">
+              <button onclick="editCommission('${r._id}')" class="btn-edit">編集</button>
+              <button onclick="deleteCommission('${r._id}')" class="btn-danger">削除</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+        setCommissionTotals(invoice, tax, total, received);
+      } catch(e) { showToast('読み込みエラー', 'error'); }
+    }
+
+    function setCommissionTotals(inv, tax, tot, rec) {
+      document.getElementById('c-total').textContent         = '¥'+Math.round(tot).toLocaleString();
+      document.getElementById('c-received').textContent      = '¥'+Math.round(rec).toLocaleString();
+      document.getElementById('c-foot-invoice').textContent  = '¥'+Math.round(inv).toLocaleString();
+      document.getElementById('c-foot-tax').textContent      = '¥'+Math.round(tax).toLocaleString();
+      document.getElementById('c-foot-total').textContent    = '¥'+Math.round(tot).toLocaleString();
+      document.getElementById('c-foot-received').textContent = '¥'+Math.round(rec).toLocaleString();
+    }
+
+    async function editCommission(id) {
+      currentTab = 'commission';
+      document.getElementById('modal-title').textContent = '業務委託料明細 編集';
+      ['payment','commission','transfer'].forEach(t => document.getElementById('form-'+t).classList.toggle('hidden', t !== 'commission'));
+      const r = await fetch('/api/commissions/' + id).then(res => res.json());
+      document.getElementById('c-edit-id').value      = r._id;
+      document.getElementById('c-no').value           = r.no ?? '';
+      document.getElementById('c-month').value        = r.invoice_month ?? '';
+      document.getElementById('c-received-date').value = r.received_date ?? '';
+      document.getElementById('c-client').value       = r.client ?? '';
+      document.getElementById('c-period').value       = r.period ?? '';
+      document.getElementById('c-invoice').value      = r.invoice_amount ?? '';
+      document.getElementById('c-tax').value          = r.tax_amount ?? '';
+      document.getElementById('c-total-amount').value = r.total_amount ?? '';
+      document.getElementById('c-received').value     = r.received_amount ?? '';
+      document.getElementById('c-method').value       = r.payment_method ?? '';
+      document.getElementById('c-notes').value        = r.notes ?? '';
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    async function deleteCommission(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      await fetch('/api/commissions/' + id, { method: 'DELETE' });
+      showToast('削除しました', 'success'); loadCommissions();
+    }
+
+    async function submitCommission(e) {
+      e.preventDefault();
+      const id = document.getElementById('c-edit-id').value;
+      const inv = parseFloat(document.getElementById('c-invoice').value) || 0;
+      const tax = parseFloat(document.getElementById('c-tax').value)     || Math.round(inv * 0.1);
+      const payload = {
+        no:              document.getElementById('c-no').value || null,
+        invoice_month:   document.getElementById('c-month').value,
+        received_date:   document.getElementById('c-received-date').value,
+        client:          document.getElementById('c-client').value,
+        period:          document.getElementById('c-period').value,
+        invoice_amount:  inv,
+        tax_amount:      tax,
+        total_amount:    inv + tax,
+        received_amount: parseFloat(document.getElementById('c-received').value) || 0,
+        payment_method:  document.getElementById('c-method').value,
+        notes:           document.getElementById('c-notes').value,
+      };
+      const method = id ? 'PUT' : 'POST';
+      const url    = id ? '/api/commissions/' + id : '/api/commissions';
+      await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      showToast(id ? '更新しました' : '保存しました', 'success');
+      closeModal(); loadCommissions();
+    }
+
+    // ── 資金移動明細 ─────────────────────────────────────────────
+    async function loadTransfers() {
+      const params = new URLSearchParams();
+      const from = document.getElementById('tf-from').value;
+      const to   = document.getElementById('tf-to').value;
+      if (from) params.set('from', from);
+      if (to)   params.set('to', to);
+      try {
+        const data = await fetch('/api/transfers?' + params).then(r => r.json());
+        const tbody = document.getElementById('t-body');
+        document.getElementById('t-count').textContent = data.length;
+        let total = 0;
+        if (!data.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-gray-400">データがありません</td></tr>';
+          setTransferTotals(0); return;
+        }
+        tbody.innerHTML = data.map(r => {
+          total += r.amount || 0;
+          return `<tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-3 py-2.5 whitespace-nowrap">${r.transfer_date ?? '-'}</td>
+            <td class="px-3 py-2.5 text-gray-700">${r.from_account ?? '-'}</td>
+            <td class="px-3 py-2.5 text-gray-700">${r.to_account ?? '-'}</td>
+            <td class="px-3 py-2.5 text-right font-medium text-indigo-600">${r.amount ? '¥'+Math.round(r.amount).toLocaleString() : '-'}</td>
+            <td class="px-3 py-2.5 text-gray-600">${r.purpose ?? '-'}</td>
+            <td class="px-3 py-2.5 text-xs text-gray-500">${r.notes ?? ''}</td>
+            <td class="px-3 py-2.5 text-center"><div class="flex gap-1 justify-center">
+              <button onclick="editTransfer('${r._id}')" class="btn-edit">編集</button>
+              <button onclick="deleteTransfer('${r._id}')" class="btn-danger">削除</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+        setTransferTotals(total);
+      } catch(e) { showToast('読み込みエラー', 'error'); }
+    }
+
+    function setTransferTotals(t) {
+      document.getElementById('t-total').textContent      = '¥'+Math.round(t).toLocaleString();
+      document.getElementById('t-foot-total').textContent = '¥'+Math.round(t).toLocaleString();
+    }
+
+    async function editTransfer(id) {
+      currentTab = 'transfer';
+      document.getElementById('modal-title').textContent = '資金移動明細 編集';
+      ['payment','commission','transfer'].forEach(t => document.getElementById('form-'+t).classList.toggle('hidden', t !== 'transfer'));
+      const r = await fetch('/api/transfers/' + id).then(res => res.json());
+      document.getElementById('t-edit-id').value = r._id;
+      document.getElementById('t-date').value    = r.transfer_date ?? '';
+      document.getElementById('t-from').value    = r.from_account  ?? '';
+      document.getElementById('t-to').value      = r.to_account    ?? '';
+      document.getElementById('t-amount').value  = r.amount        ?? '';
+      document.getElementById('t-purpose').value = r.purpose       ?? '';
+      document.getElementById('t-notes').value   = r.notes         ?? '';
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    async function deleteTransfer(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      await fetch('/api/transfers/' + id, { method: 'DELETE' });
+      showToast('削除しました', 'success'); loadTransfers();
+    }
+
+    async function submitTransfer(e) {
+      e.preventDefault();
+      const id = document.getElementById('t-edit-id').value;
+      const payload = {
+        transfer_date: document.getElementById('t-date').value,
+        from_account:  document.getElementById('t-from').value,
+        to_account:    document.getElementById('t-to').value,
+        amount:        parseFloat(document.getElementById('t-amount').value) || 0,
+        purpose:       document.getElementById('t-purpose').value,
+        notes:         document.getElementById('t-notes').value,
+      };
+      const method = id ? 'PUT' : 'POST';
+      const url    = id ? '/api/transfers/' + id : '/api/transfers';
+      await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      showToast(id ? '更新しました' : '保存しました', 'success');
+      closeModal(); loadTransfers();
+    }
+
+    // ── CSV出力 ──────────────────────────────────────────────────
+    function exportCsv(type) {
+      const urls = {
+        payment:    '/api/payments/export/csv',
+        commission: '/api/commissions/export/csv',
+        transfer:   '/api/transfers/export/csv',
+      };
+      window.location.href = urls[type];
+    }
+
+    // ── Toast ────────────────────────────────────────────────────
+    function showToast(msg, type = '') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2800);
+    }
+
+    // ── 初期化 ───────────────────────────────────────────────────
+    initMasters().then(() => loadPayments());
+  </script>
+</body>
+</html>
