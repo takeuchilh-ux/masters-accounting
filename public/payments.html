@@ -49,7 +49,7 @@
     <!-- ======== 支払明細 ======== -->
     <div id="section-payment">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
             <label class="form-label">銀行口座</label>
             <select id="pf-bank" class="form-input" onchange="loadPayments()"><option value="">すべて</option></select>
@@ -115,7 +115,7 @@
     <!-- ======== 業務委託料明細 ======== -->
     <div id="section-commission" class="hidden">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label class="form-label">請求月 From</label>
             <input type="month" id="cf-from" class="form-input" onchange="loadCommissions()">
@@ -176,7 +176,7 @@
     <!-- ======== 資金移動明細 ======== -->
     <div id="section-transfer" class="hidden">
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
             <label class="form-label">日付 From</label>
             <input type="date" id="tf-from" class="form-input" onchange="loadTransfers()">
