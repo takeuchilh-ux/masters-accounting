@@ -155,9 +155,11 @@
             <!-- 事業所コンボボックス -->
             <div>
               <label class="form-label">事業所</label>
-              <input type="text" id="f-store-form" class="form-input" list="list-store" placeholder="選択または入力">
-              <datalist id="list-store"></datalist>
-              <button type="button" id="btn-add-store" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700">＋ マスタに追加</button>
+              <select id="f-store-sel" class="form-input" onchange="onComboSelChange('store')">
+                <option value="">選択してください</option>
+              </select>
+              <input type="text" id="f-store-form" class="form-input mt-2 hidden" placeholder="事業所名を直接入力" oninput="onComboInput('store')">
+              <button type="button" id="btn-add-store" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700" onclick="addToMaster('store')">＋ マスタに追加</button>
             </div>
             <!-- 支払先 -->
             <div>
@@ -174,9 +176,11 @@
           <!-- 勘定科目コンボボックス -->
           <div class="mb-4">
             <label class="form-label">勘定科目</label>
-            <input type="text" id="f-account-category" class="form-input" list="list-account-category" placeholder="選択または入力（例：消耗品費）">
-            <datalist id="list-account-category"></datalist>
-            <button type="button" id="btn-add-account-category" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700">＋ マスタに追加</button>
+            <select id="f-account-sel" class="form-input" onchange="onComboSelChange('account_category')">
+              <option value="">選択してください</option>
+            </select>
+            <input type="text" id="f-account-category" class="form-input mt-2 hidden" placeholder="勘定科目を直接入力（例：消耗品費）" oninput="onComboInput('account_category')">
+            <button type="button" id="btn-add-account-category" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700" onclick="addToMaster('account_category')">＋ マスタに追加</button>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -251,6 +255,89 @@
       if (dl) dl.innerHTML = values.map(v => `<option value="${v.replace(/"/g,'&quot;')}">`).join('');
     }
 
+    // ── セレクト+直接入力コンボ ──────────────────────────────────
+    const COMBOS = {
+      store:            { selId: 'f-store-sel',   inputId: 'f-store-form',       btnId: 'btn-add-store',            masterType: 'store' },
+      account_category: { selId: 'f-account-sel', inputId: 'f-account-category', btnId: 'btn-add-account-category', masterType: 'account_category' },
+    };
+
+    function fillSelect(selectId, values) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML =
+        '<option value="">選択してください</option>' +
+        values.map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('') +
+        '<option value="__custom__">✏️ 直接入力する...</option>';
+    }
+
+    function onComboSelChange(type) {
+      const { selId, inputId, btnId } = COMBOS[type];
+      const sel   = document.getElementById(selId);
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      if (sel.value === '__custom__') {
+        input.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        btn.classList.add('hidden');
+      } else {
+        input.classList.add('hidden');
+        btn.classList.add('hidden');
+      }
+    }
+
+    function onComboInput(type) {
+      const { inputId, btnId, masterType } = COMBOS[type];
+      const val  = document.getElementById(inputId).value.trim();
+      const opts = masterCache[masterType] || [];
+      const btn  = document.getElementById(btnId);
+      btn.classList.toggle('hidden', !val || opts.includes(val));
+      if (!btn.classList.contains('hidden')) btn.textContent = `＋「${val}」をマスタに追加`;
+    }
+
+    function getComboValue(type) {
+      const { selId, inputId } = COMBOS[type];
+      const sel = document.getElementById(selId);
+      if (sel && sel.value && sel.value !== '__custom__') return sel.value;
+      return document.getElementById(inputId).value.trim();
+    }
+
+    function setComboValue(type, value) {
+      const { selId, inputId, btnId } = COMBOS[type];
+      const sel   = document.getElementById(selId);
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      btn.classList.add('hidden');
+      if (!value) { sel.value = ''; input.classList.add('hidden'); return; }
+      const exists = Array.from(sel.options).some(o => o.value === value);
+      if (exists) {
+        sel.value = value;
+        input.classList.add('hidden');
+      } else {
+        sel.value = '__custom__';
+        input.classList.remove('hidden');
+        input.value = value;
+      }
+    }
+
+    async function addToMaster(type) {
+      const { selId, inputId, btnId, masterType } = COMBOS[type];
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) return;
+      await fetch('/api/masters', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: masterType, value: val }),
+      });
+      delete masterCache[masterType];
+      const values = await loadMaster(masterType);
+      fillSelect(selId, values);
+      // 追加した値をセレクトで選択状態に
+      document.getElementById(selId).value = val;
+      document.getElementById(inputId).classList.add('hidden');
+      document.getElementById(btnId).classList.add('hidden');
+      showToast(`「${val}」をマスタに追加しました`, 'success');
+    }
+
     function initCombobox(inputId, listId, btnId, masterType) {
       const input = document.getElementById(inputId);
       const btn   = document.getElementById(btnId);
@@ -280,8 +367,8 @@
       const [stores, accounts, taxCats] = await Promise.all([
         loadMaster('store'), loadMaster('account_category'), loadMaster('tax_category')
       ]);
-      fillDatalist('list-store', stores);
-      fillDatalist('list-account-category', accounts);
+      fillSelect('f-store-sel', stores);
+      fillSelect('f-account-sel', accounts);
       fillDatalist('list-tax-category', taxCats);
 
       // フィルター用セレクトボックス
@@ -290,9 +377,7 @@
       const accountFilter = document.getElementById('f-account');
       accounts.forEach(a => accountFilter.innerHTML += `<option>${a}</option>`);
 
-      initCombobox('f-store-form',       'list-store',            'btn-add-store',            'store');
-      initCombobox('f-account-category', 'list-account-category', 'btn-add-account-category', 'account_category');
-      initCombobox('f-tax-category',     'list-tax-category',     'btn-add-tax-category',     'tax_category');
+      initCombobox('f-tax-category', 'list-tax-category', 'btn-add-tax-category', 'tax_category');
     }
 
     async function loadList() {
@@ -360,6 +445,8 @@
       document.getElementById('f-qty').value = 1;
       document.getElementById('receipt-preview-wrap').classList.add('hidden');
       document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      setComboValue('store', '');
+      setComboValue('account_category', '');
       document.getElementById('modal').classList.remove('hidden');
     }
     function closeModal() { document.getElementById('modal').classList.add('hidden'); }
@@ -370,10 +457,10 @@
       document.getElementById('edit-id').value = r._id;
       document.getElementById('f-no').value = r.no ?? '';
       document.getElementById('f-date').value = r.date ?? '';
-      document.getElementById('f-store-form').value = r.store ?? '';
+      setComboValue('store', r.store ?? '');
       document.getElementById('f-payee').value = r.payee ?? '';
       document.getElementById('f-item-name').value = r.item_name ?? '';
-      document.getElementById('f-account-category').value = r.account_category ?? '';
+      setComboValue('account_category', r.account_category ?? '');
       document.getElementById('f-qty').value = r.quantity ?? 1;
       document.getElementById('f-unit-price').value = r.unit_price ?? '';
       document.getElementById('f-amount').value = r.amount ?? '';
@@ -407,10 +494,10 @@
       const payload = {
         no: document.getElementById('f-no').value || null,
         date: document.getElementById('f-date').value,
-        store: document.getElementById('f-store-form').value,
+        store: getComboValue('store'),
         payee: document.getElementById('f-payee').value,
         item_name: document.getElementById('f-item-name').value,
-        account_category: document.getElementById('f-account-category').value,
+        account_category: getComboValue('account_category'),
         quantity: parseFloat(document.getElementById('f-qty').value) || null,
         unit_price: parseFloat(document.getElementById('f-unit-price').value) || null,
         amount: parseFloat(document.getElementById('f-amount').value) || null,
@@ -480,7 +567,7 @@
         if (data.date)               document.getElementById('f-date').value = data.date;
         if (data.payee)              document.getElementById('f-payee').value = data.payee;
         if (data.item_name)          document.getElementById('f-item-name').value = data.item_name;
-        if (data.account_category)   document.getElementById('f-account-category').value = data.account_category;
+        if (data.account_category)   setComboValue('account_category', data.account_category);
         if (data.amount != null)     document.getElementById('f-amount').value = data.amount;
         if (data.tax_rate)           document.getElementById('f-tax-rate').value = data.tax_rate;
         if (data.tax_amount != null) document.getElementById('f-tax-amount').value = data.tax_amount;
