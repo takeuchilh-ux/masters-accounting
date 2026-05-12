@@ -33,10 +33,16 @@
   <main class="max-w-7xl mx-auto px-4 py-8">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
       <h1 class="text-2xl font-bold text-gray-800">小口精算 <span class="text-base font-normal text-gray-500 hidden sm:inline">備品購入等 明細書</span></h1>
-      <button onclick="openModal()" class="btn-primary flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        新規入力
-      </button>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="openMultiModal()" class="btn-secondary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          まとめてアップロード
+        </button>
+        <button onclick="openModal()" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新規入力
+        </button>
+      </div>
     </div>
 
     <!-- フィルター -->
@@ -236,6 +242,66 @@
             <button type="submit" class="btn-primary">保存</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= まとめてアップロード モーダル ========= -->
+  <div id="multi-modal" class="modal-backdrop hidden">
+    <div class="modal-box" style="max-width:860px">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800">まとめてアップロード（最大5枚）</h2>
+        <button onclick="closeMultiModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 1: ファイル選択 -->
+      <div id="multi-step-select" class="p-6">
+        <div class="drop-zone" onclick="document.getElementById('multi-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="event.preventDefault();this.classList.remove('drag-over');onMultiDrop(event)">
+          <svg class="w-12 h-12 text-indigo-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <p class="text-sm font-medium text-indigo-600">クリックまたはドラッグ＆ドロップ</p>
+          <p class="text-xs text-gray-400 mt-1">最大5枚 ／ JPG・PNG・HEIC対応 ／ 1枚ずつ順番にAI解析します</p>
+        </div>
+        <input type="file" id="multi-file-input" multiple accept="image/*,.heic,.heif" class="hidden" onchange="onMultiFileSelect(event)">
+        <div id="multi-thumb-grid" class="hidden mt-4 grid grid-cols-3 sm:grid-cols-5 gap-3"></div>
+        <div class="flex items-center justify-between mt-5">
+          <p id="multi-select-count" class="text-sm text-gray-500"></p>
+          <div class="flex gap-2">
+            <button onclick="closeMultiModal()" class="btn-secondary">キャンセル</button>
+            <button id="multi-ocr-btn" onclick="startMultiOcr()" class="btn-primary hidden">AI解析スタート →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: 解析中 -->
+      <div id="multi-step-processing" class="p-6 hidden">
+        <p class="text-sm text-gray-500 mb-4">レシートを1枚ずつAI解析しています...</p>
+        <div id="multi-prog-list" class="space-y-3"></div>
+      </div>
+
+      <!-- Step 3: 確認・編集・保存 -->
+      <div id="multi-step-review" class="hidden">
+        <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between gap-3 bg-gray-50">
+          <p class="text-sm text-gray-600 font-medium">内容を確認・修正してから保存してください</p>
+          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" id="multi-check-all" checked onchange="toggleAllMultiCheck(this.checked)" class="accent-indigo-600 w-4 h-4">
+            すべて選択
+          </label>
+        </div>
+        <div class="p-4 overflow-y-auto" style="max-height:55vh">
+          <div id="multi-review-list" class="space-y-4"></div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-sm text-gray-500">チェックした項目をまとめて保存します</p>
+          <div class="flex gap-2">
+            <button onclick="closeMultiModal()" class="btn-secondary">閉じる</button>
+            <button onclick="saveAllMulti()" id="multi-save-btn" class="btn-primary">まとめて保存</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -606,6 +672,229 @@
     document.getElementById('modal').addEventListener('click', e => {
       if (e.target === document.getElementById('modal')) closeModal();
     });
+    document.getElementById('multi-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('multi-modal')) closeMultiModal();
+    });
+
+    // ── まとめてアップロード ────────────────────────────────────
+    let multiFiles = [];
+    let multiResults = [];
+
+    function openMultiModal() {
+      multiFiles = []; multiResults = [];
+      document.getElementById('multi-thumb-grid').innerHTML = '';
+      document.getElementById('multi-thumb-grid').classList.add('hidden');
+      document.getElementById('multi-select-count').textContent = '';
+      document.getElementById('multi-ocr-btn').classList.add('hidden');
+      document.getElementById('multi-file-input').value = '';
+      showMultiStep('select');
+      document.getElementById('multi-modal').classList.remove('hidden');
+    }
+    function closeMultiModal() { document.getElementById('multi-modal').classList.add('hidden'); }
+    function showMultiStep(step) {
+      ['select','processing','review'].forEach(s => {
+        document.getElementById('multi-step-' + s).classList.toggle('hidden', s !== step);
+      });
+    }
+
+    function onMultiFileSelect(e) { setMultiFiles(Array.from(e.target.files)); }
+    function onMultiDrop(e) {
+      setMultiFiles(Array.from(e.dataTransfer.files)
+        .filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name)));
+    }
+    function setMultiFiles(files) {
+      multiFiles = files.slice(0, 5);
+      const grid = document.getElementById('multi-thumb-grid');
+      if (multiFiles.length === 0) {
+        grid.classList.add('hidden');
+        document.getElementById('multi-select-count').textContent = '';
+        document.getElementById('multi-ocr-btn').classList.add('hidden');
+        return;
+      }
+      grid.innerHTML = multiFiles.map((f, i) => {
+        const isHeic = /\.(heic|heif)$/i.test(f.name) || f.type === 'image/heic';
+        return `<div class="relative">
+          ${isHeic
+            ? `<div class="w-full aspect-square bg-gray-100 rounded-lg border flex flex-col items-center justify-center text-xs text-gray-400 p-1"><span class="font-bold">HEIC</span><span class="mt-1 truncate w-full text-center">${f.name}</span></div>`
+            : `<img src="${URL.createObjectURL(f)}" class="w-full aspect-square object-cover rounded-lg border">`}
+          <span class="absolute top-1 left-1 bg-indigo-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center leading-none">${i + 1}</span>
+        </div>`;
+      }).join('');
+      grid.classList.remove('hidden');
+      document.getElementById('multi-select-count').textContent =
+        `${multiFiles.length}枚選択中${multiFiles.length === 5 ? '（上限）' : ''}`;
+      document.getElementById('multi-ocr-btn').classList.remove('hidden');
+    }
+
+    async function startMultiOcr() {
+      if (multiFiles.length === 0) return;
+      showMultiStep('processing');
+      multiResults = [];
+      // 進捗リスト描画
+      document.getElementById('multi-prog-list').innerHTML = multiFiles.map((f, i) => {
+        const isHeic = /\.(heic|heif)$/i.test(f.name) || f.type === 'image/heic';
+        return `<div id="mprog-${i}" class="flex items-center gap-3 p-3 border rounded-lg bg-gray-50">
+          <div class="w-12 h-12 flex-shrink-0 rounded-lg border overflow-hidden bg-gray-200 flex items-center justify-center">
+            ${isHeic ? `<span class="text-xs text-gray-400">HEIC</span>` : `<img src="${URL.createObjectURL(f)}" class="w-full h-full object-cover">`}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-700 truncate">${f.name}</p>
+            <p id="mprog-st-${i}" class="text-xs text-gray-400">待機中...</p>
+          </div>
+          <div id="mprog-ic-${i}" class="flex-shrink-0"></div>
+        </div>`;
+      }).join('');
+      // 1枚ずつ順番に処理
+      for (let i = 0; i < multiFiles.length; i++) {
+        document.getElementById(`mprog-st-${i}`).textContent = 'AI解析中...';
+        document.getElementById(`mprog-ic-${i}`).innerHTML =
+          '<span class="spinner" style="border-color:rgba(79,70,229,0.2);border-top-color:#4f46e5"></span>';
+        try {
+          const fd = new FormData();
+          fd.append('receipt', multiFiles[i]);
+          const res  = await fetch('/api/ocr', { method: 'POST', body: fd });
+          const data = await res.json();
+          multiResults.push({ idx: i, file: multiFiles[i], data });
+          if (data.error) {
+            document.getElementById(`mprog-st-${i}`).textContent = `エラー: ${data.error}`;
+            document.getElementById(`mprog-st-${i}`).className = 'text-xs text-red-500';
+            document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+          } else {
+            document.getElementById(`mprog-st-${i}`).textContent = '解析完了';
+            document.getElementById(`mprog-st-${i}`).className = 'text-xs text-green-600';
+            document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+          }
+        } catch(_) {
+          multiResults.push({ idx: i, file: multiFiles[i], data: { error: '通信エラー' } });
+          document.getElementById(`mprog-st-${i}`).textContent = '通信エラー';
+          document.getElementById(`mprog-st-${i}`).className = 'text-xs text-red-500';
+          document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+        }
+      }
+      showMultiStep('review');
+      renderMultiReview();
+    }
+
+    function renderMultiReview() {
+      const stores   = (masterCache['store']            || []).map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+      const accounts = (masterCache['account_category'] || []).map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+      document.getElementById('multi-review-list').innerHTML = multiResults.map(r => {
+        const { idx, file, data } = r;
+        const hasErr = !!data.error;
+        const img    = data.receipt_image || '';
+        return `<div class="border rounded-xl overflow-hidden ${hasErr ? 'border-red-200' : 'border-gray-200'}">
+          <div class="flex items-center gap-3 px-4 py-2 ${hasErr ? 'bg-red-50' : 'bg-gray-50'} border-b flex-wrap">
+            <input type="checkbox" id="mc-chk-${idx}" ${hasErr ? '' : 'checked'} class="w-4 h-4 accent-indigo-600 flex-shrink-0">
+            <span class="font-semibold text-sm text-gray-700">レシート ${idx + 1}</span>
+            <span class="text-xs text-gray-400 truncate">${file.name}</span>
+            <span class="tag ${hasErr ? 'tag-red' : 'tag-green'} ml-auto flex-shrink-0">${hasErr ? 'エラー' : '解析完了'}</span>
+          </div>
+          ${hasErr ? `<p class="p-4 text-sm text-red-600">${data.error}</p>` : `
+          <div class="p-4 flex gap-4 flex-wrap sm:flex-nowrap">
+            <div class="flex-shrink-0">
+              ${img ? `<img src="${img}" class="w-20 h-20 object-cover rounded-lg border">` : `<div class="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-400">画像なし</div>`}
+            </div>
+            <div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div><label class="form-label">日付</label>
+                <input type="date" id="mc-date-${idx}" class="form-input" value="${data.date || ''}"></div>
+              <div><label class="form-label">支払先</label>
+                <input type="text" id="mc-payee-${idx}" class="form-input" value="${(data.payee || '').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"></div>
+              <div><label class="form-label">品名</label>
+                <input type="text" id="mc-item-${idx}" class="form-input" value="${(data.item_name || '').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"></div>
+              <div><label class="form-label">事業所</label>
+                <select id="mc-store-sel-${idx}" class="form-input" onchange="onMultiCombo(${idx},'store')">
+                  <option value="">選択してください</option>${stores}
+                  <option value="__custom__">✏️ 直接入力する...</option>
+                </select>
+                <input type="text" id="mc-store-txt-${idx}" class="form-input mt-1 hidden" placeholder="直接入力">
+              </div>
+              <div><label class="form-label">勘定科目</label>
+                <select id="mc-acct-sel-${idx}" class="form-input" onchange="onMultiCombo(${idx},'acct')">
+                  <option value="">選択してください</option>${accounts}
+                  <option value="__custom__">✏️ 直接入力する...</option>
+                </select>
+                <input type="text" id="mc-acct-txt-${idx}" class="form-input mt-1 hidden" placeholder="直接入力">
+              </div>
+              <div><label class="form-label">合計金額（税込）</label>
+                <input type="number" id="mc-total-${idx}" class="form-input" value="${data.total_amount != null ? data.total_amount : ''}"></div>
+            </div>
+          </div>`}
+        </div>`;
+      }).join('');
+      // コンボ初期値セット
+      multiResults.forEach(r => {
+        if (!r.data.error) {
+          setMultiCombo(r.idx, 'store', r.data.store || '');
+          setMultiCombo(r.idx, 'acct',  r.data.account_category || '');
+        }
+      });
+    }
+
+    function onMultiCombo(idx, type) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      const txt = document.getElementById(`mc-${type}-txt-${idx}`);
+      if (!sel || !txt) return;
+      if (sel.value === '__custom__') { txt.classList.remove('hidden'); txt.focus(); }
+      else txt.classList.add('hidden');
+    }
+    function setMultiCombo(idx, type, value) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      const txt = document.getElementById(`mc-${type}-txt-${idx}`);
+      if (!sel) return;
+      if (!value) { sel.value = ''; if (txt) txt.classList.add('hidden'); return; }
+      if (Array.from(sel.options).some(o => o.value === value)) {
+        sel.value = value; if (txt) txt.classList.add('hidden');
+      } else {
+        sel.value = '__custom__'; if (txt) { txt.classList.remove('hidden'); txt.value = value; }
+      }
+    }
+    function getMultiCombo(idx, type) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      if (sel && sel.value && sel.value !== '__custom__') return sel.value;
+      return (document.getElementById(`mc-${type}-txt-${idx}`)?.value || '').trim();
+    }
+
+    function toggleAllMultiCheck(checked) {
+      multiResults.forEach(r => {
+        const c = document.getElementById(`mc-chk-${r.idx}`);
+        if (c) c.checked = checked;
+      });
+    }
+
+    async function saveAllMulti() {
+      const toSave = multiResults.filter(r => {
+        const c = document.getElementById(`mc-chk-${r.idx}`);
+        return c && c.checked && !r.data.error;
+      });
+      if (toSave.length === 0) { showToast('保存する項目を選択してください', 'error'); return; }
+      const btn = document.getElementById('multi-save-btn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      let saved = 0, failed = 0;
+      for (const r of toSave) {
+        const i = r.idx;
+        const payload = {
+          date:              document.getElementById(`mc-date-${i}`)?.value || '',
+          store:             getMultiCombo(i, 'store'),
+          payee:             document.getElementById(`mc-payee-${i}`)?.value || '',
+          item_name:         document.getElementById(`mc-item-${i}`)?.value  || '',
+          account_category:  getMultiCombo(i, 'acct'),
+          total_amount:      parseFloat(document.getElementById(`mc-total-${i}`)?.value) || null,
+          receipt_image:     r.data.receipt_image    || '',
+          receipt_drive_url: r.data.receipt_drive_url || '',
+        };
+        try {
+          const res = await fetch('/api/petty-cash', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) saved++; else failed++;
+        } catch { failed++; }
+      }
+      btn.disabled = false; btn.textContent = 'まとめて保存';
+      if (saved  > 0) showToast(`${saved}件を保存しました`, 'success');
+      if (failed > 0) showToast(`${failed}件の保存に失敗しました`, 'error');
+      if (saved  > 0) { closeMultiModal(); loadList(); }
+    }
 
     initMasters().then(() => loadList());
   </script>
