@@ -9,14 +9,14 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-  <nav class="bg-indigo-700 text-white shadow-lg">
+  <nav class="bg-indigo-700 text-white shadow-lg relative z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <svg class="w-7 h-7" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4338ca" text-anchor="middle">MS</text></svg>
         <span class="text-xl font-bold">会計管理システム</span>
-        <span class="text-indigo-200 text-sm">マスターズスタッフ株式会社</span>
+        <span class="text-indigo-200 text-sm hidden lg:inline">マスターズスタッフ株式会社</span>
       </div>
-      <div class="flex gap-1">
+      <div id="nav-menu" class="hidden md:flex flex-col md:flex-row items-stretch md:items-center gap-1 absolute md:static top-full left-0 right-0 bg-indigo-800 md:bg-transparent p-4 md:p-0 shadow-xl md:shadow-none">
         <a href="index.html"      class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">ダッシュボード</a>
         <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">小口精算</a>
         <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">会計項目別支払</a>
@@ -25,6 +25,9 @@
         <span id="user-email" class="text-indigo-200 text-xs self-center px-1 hidden sm:block"></span>
         <button onclick="logout()" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-900 hover:bg-red-700 transition-colors whitespace-nowrap">ログアウト</button>
       </div>
+      <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="md:hidden p-2 rounded-md hover:bg-indigo-600 focus:outline-none" aria-label="メニュー">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </nav>
 

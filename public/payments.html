@@ -9,13 +9,13 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-  <nav class="bg-indigo-700 text-white shadow-lg">
+  <nav class="bg-indigo-700 text-white shadow-lg relative z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <svg class="w-7 h-7" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4338ca" text-anchor="middle">MS</text></svg>
         <span class="text-xl font-bold">会計管理システム</span>
       </div>
-      <div class="flex gap-1">
+      <div id="nav-menu" class="hidden md:flex flex-col md:flex-row items-stretch md:items-center gap-1 absolute md:static top-full left-0 right-0 bg-indigo-800 md:bg-transparent p-4 md:p-0 shadow-xl md:shadow-none">
         <a href="index.html"      class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">ダッシュボード</a>
         <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">小口精算</a>
         <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">会計項目別支払</a>
@@ -24,11 +24,14 @@
         <span id="user-email" class="text-indigo-200 text-xs self-center px-1 hidden sm:block"></span>
         <button onclick="logout()" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-900 hover:bg-red-700 transition-colors whitespace-nowrap">ログアウト</button>
       </div>
+      <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="md:hidden p-2 rounded-md hover:bg-indigo-600 focus:outline-none" aria-label="メニュー">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </nav>
 
   <main class="max-w-7xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
       <h1 class="text-2xl font-bold text-gray-800">会計項目別支払集計表</h1>
       <button onclick="openModal()" class="btn-primary flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -37,7 +40,7 @@
     </div>
 
     <!-- タブナビゲーション -->
-    <div class="flex gap-1 mb-6 border-b border-gray-200">
+    <div class="flex flex-wrap gap-1 mb-6 border-b border-gray-200">
       <button onclick="switchTab('payment')"    id="tab-payment"    class="tab-btn active px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">支払明細</button>
       <button onclick="switchTab('commission')" id="tab-commission" class="tab-btn px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">業務委託料明細</button>
       <button onclick="switchTab('transfer')"   id="tab-transfer"   class="tab-btn px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors">資金移動明細</button>
@@ -234,7 +237,7 @@
         <!-- === 支払明細フォーム === -->
         <form id="form-payment" class="hidden" onsubmit="submitPayment(event)">
           <input type="hidden" id="p-edit-id">
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">No.</label>
               <input type="number" id="p-no" class="form-input" placeholder="自動">
@@ -250,7 +253,7 @@
             <datalist id="dl-bank"></datalist>
             <button type="button" id="btn-add-p-bank" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">支払先 <span class="text-red-500">*</span></label>
               <input type="text" id="p-payee" class="form-input" required placeholder="例：横浜銀行">
@@ -260,7 +263,7 @@
               <input type="text" id="p-desc" class="form-input" required placeholder="例：借入金返済">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">出金額（円）</label>
               <input type="number" id="p-debit" class="form-input" min="0" step="1" placeholder="0">
@@ -270,7 +273,7 @@
               <input type="number" id="p-credit" class="form-input" min="0" step="1" placeholder="0">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">会計科目 <span class="text-red-500">*</span></label>
               <input type="text" id="p-account" class="form-input" list="dl-account" required placeholder="選択または入力">
@@ -284,7 +287,7 @@
               <button type="button" id="btn-add-p-method" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">集計月</label>
               <input type="month" id="p-month" class="form-input">
@@ -294,7 +297,7 @@
               <input type="text" id="p-notes" class="form-input" placeholder="任意">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">キー</label>
               <input type="text" id="p-key" class="form-input bg-gray-50" placeholder="支払先|摘要 で自動生成">
@@ -317,7 +320,7 @@
         <!-- === 業務委託料明細フォーム === -->
         <form id="form-commission" class="hidden" onsubmit="submitCommission(event)">
           <input type="hidden" id="c-edit-id">
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">No.</label>
               <input type="number" id="c-no" class="form-input" placeholder="自動">
@@ -327,7 +330,7 @@
               <input type="month" id="c-month" class="form-input" required>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">入金日</label>
               <input type="date" id="c-received-date" class="form-input">
@@ -341,7 +344,7 @@
             <label class="form-label">対象期間</label>
             <input type="text" id="c-period" class="form-input" placeholder="例：2026/4/01〜2026/4/30">
           </div>
-          <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label class="form-label">請求金額（税抜）</label>
               <input type="number" id="c-invoice" class="form-input" min="0" step="1" placeholder="0" oninput="calcCommission()">
@@ -355,7 +358,7 @@
               <input type="number" id="c-total-amount" class="form-input bg-gray-50" min="0" step="1" placeholder="自動計算" readonly>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">入金額</label>
               <input type="number" id="c-received" class="form-input" min="0" step="1" placeholder="0">
@@ -380,7 +383,7 @@
         <!-- === 資金移動明細フォーム === -->
         <form id="form-transfer" class="hidden" onsubmit="submitTransfer(event)">
           <input type="hidden" id="t-edit-id">
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">日付 <span class="text-red-500">*</span></label>
               <input type="date" id="t-date" class="form-input" required>
@@ -390,7 +393,7 @@
               <input type="number" id="t-amount" class="form-input" min="0" step="1" required placeholder="0">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">移動元口座 <span class="text-red-500">*</span></label>
               <input type="text" id="t-from" class="form-input" list="dl-t-from" required placeholder="選択または入力">
@@ -404,7 +407,7 @@
               <button type="button" id="btn-add-t-to" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700"></button>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">目的</label>
               <input type="text" id="t-purpose" class="form-input" placeholder="例：小口精算補充">

@@ -9,13 +9,13 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-  <nav class="bg-indigo-700 text-white shadow-lg">
+  <nav class="bg-indigo-700 text-white shadow-lg relative z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <svg class="w-7 h-7" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4338ca" text-anchor="middle">MS</text></svg>
         <span class="text-xl font-bold">会計管理システム</span>
       </div>
-      <div class="flex gap-1">
+      <div id="nav-menu" class="hidden md:flex flex-col md:flex-row items-stretch md:items-center gap-1 absolute md:static top-full left-0 right-0 bg-indigo-800 md:bg-transparent p-4 md:p-0 shadow-xl md:shadow-none">
         <a href="index.html"      class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">ダッシュボード</a>
         <a href="petty-cash.html" class="px-4 py-2 rounded-md text-sm font-medium bg-indigo-800">小口精算</a>
         <a href="payments.html"   class="px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600 transition-colors">会計項目別支払</a>
@@ -24,12 +24,15 @@
         <span id="user-email" class="text-indigo-200 text-xs self-center px-1 hidden sm:block"></span>
         <button onclick="logout()" class="px-3 py-2 rounded-md text-sm font-medium bg-indigo-900 hover:bg-red-700 transition-colors whitespace-nowrap">ログアウト</button>
       </div>
+      <button onclick="document.getElementById('nav-menu').classList.toggle('hidden')" class="md:hidden p-2 rounded-md hover:bg-indigo-600 focus:outline-none" aria-label="メニュー">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </nav>
 
   <main class="max-w-7xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">小口精算 <span class="text-base font-normal text-gray-500">備品購入等 明細書</span></h1>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">小口精算 <span class="text-base font-normal text-gray-500 hidden sm:inline">備品購入等 明細書</span></h1>
       <button onclick="openModal()" class="btn-primary flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         新規入力
@@ -137,7 +140,7 @@
           <input type="hidden" id="f-receipt-image">
           <input type="hidden" id="f-receipt-drive-url">
 
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="form-label">No.</label>
               <input type="number" id="f-no" class="form-input" placeholder="自動">
@@ -148,7 +151,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- 事業所コンボボックス -->
             <div>
               <label class="form-label">事業所</label>
@@ -176,7 +179,7 @@
             <button type="button" id="btn-add-account-category" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700">＋ マスタに追加</button>
           </div>
 
-          <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label class="form-label">数量</label>
               <input type="number" id="f-qty" class="form-input" min="0" step="0.01" value="1" oninput="calcAmounts()">
@@ -191,7 +194,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <div>
               <label class="form-label">税率</label>
               <select id="f-tax-rate" class="form-input" onchange="calcTax()">
@@ -210,7 +213,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- 税区分コンボボックス -->
             <div>
               <label class="form-label">税区分</label>
