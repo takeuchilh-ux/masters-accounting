@@ -135,6 +135,7 @@
         <form id="entry-form" onsubmit="submitForm(event)">
           <input type="hidden" id="edit-id">
           <input type="hidden" id="f-receipt-image">
+          <input type="hidden" id="f-receipt-drive-url">
 
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
@@ -333,7 +334,7 @@
           <td class="px-3 py-2.5 text-center"><span class="tag tag-gray">${r.tax_rate ?? '-'}</span></td>
           <td class="px-3 py-2.5 text-right font-medium text-gray-800">${r.total_amount != null ? '¥' + Math.round(r.total_amount).toLocaleString() : '-'}</td>
           <td class="px-3 py-2.5 text-center">
-            ${r.receipt_image ? `<a href="${r.receipt_image}" target="_blank" class="text-indigo-500 hover:text-indigo-700 text-xs">表示</a>` : '<span class="text-gray-300 text-xs">なし</span>'}
+            ${r.receipt_image ? `<a href="${r.receipt_drive_url || r.receipt_image}" target="_blank" class="text-indigo-500 hover:text-indigo-700 text-xs">表示</a>` : '<span class="text-gray-300 text-xs">なし</span>'}
           </td>
           <td class="px-3 py-2.5 text-center">
             <div class="flex gap-1 justify-center">
@@ -416,6 +417,7 @@
         tax_category: document.getElementById('f-tax-category').value,
         notes: document.getElementById('f-notes').value,
         receipt_image: document.getElementById('f-receipt-image').value,
+        receipt_drive_url: document.getElementById('f-receipt-drive-url').value,
       };
       const method = id ? 'PUT' : 'POST';
       const url    = id ? '/api/petty-cash/' + id : '/api/petty-cash';
@@ -466,8 +468,9 @@
         const res  = await fetch('/api/ocr', { method: 'POST', body: formData });
         const data = await res.json();
         if (data.receipt_image) {
-          document.getElementById('receipt-img').src = data.receipt_image + '?t=' + Date.now();
+          document.getElementById('receipt-img').src = data.receipt_image;
           document.getElementById('f-receipt-image').value = data.receipt_image;
+          if (data.receipt_drive_url) document.getElementById('f-receipt-drive-url').value = data.receipt_drive_url;
         }
         if (data.error) { setOcrStatus(`<span class="text-red-500">OCRエラー: ${data.error}</span>`); return; }
 

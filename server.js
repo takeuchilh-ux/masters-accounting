@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const Anthropic = require('@anthropic-ai/sdk');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
+const { uploadToDrive, deleteFromDrive, extractFileId } = require('./drive-helper');
 
 // .env 読み込み
 try {
@@ -195,8 +196,13 @@ app.delete('/api/petty-cash/:id', async (req, res) => {
   try {
     const row = await pettyCash.findOne({ _id: req.params.id });
     if (row?.receipt_image) {
-      const imgPath = path.join(uploadDir, path.basename(row.receipt_image));
-      if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+      const fileId = extractFileId(row.receipt_image) || extractFileId(row.receipt_image_id);
+      if (fileId) {
+        await deleteFromDrive(fileId);
+      } else {
+        const imgPath = path.join(uploadDir, path.basename(row.receipt_image));
+        if (fs.existsSync(imgPath)) fs.unlinkSync(imgPath);
+      }
     }
     await pettyCash.remove({ _id: req.params.id });
     res.json({ ok: true });
@@ -274,11 +280,26 @@ JSONのみ返してください。` }
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('JSON解析失敗');
     const parsed = JSON.parse(jsonMatch[0]);
-    parsed.receipt_image = `/uploads/${imageFilename}`;
+
+    // Google Driveにアップロード
+    const mimeTypeDrive = ext === '.png' ? 'image/png' : 'image/jpeg';
+    try {
+      const driveResult = await uploadToDrive(imagePath, imageFilename, mimeTypeDrive);
+      // imageUrl（lh3.googleusercontent.com）はimgタグで直接表示可能
+      parsed.receipt_image = driveResult.imageUrl;
+      parsed.receipt_drive_url = driveResult.viewUrl;
+      // ローカルの一時ファイルを削除
+      try { fs.unlinkSync(req.file.path); } catch(_) {}
+      try { if (imagePath !== req.file.path) fs.unlinkSync(imagePath); } catch(_) {}
+    } catch(driveErr) {
+      console.warn('Drive upload failed, using local:', driveErr.message);
+      parsed.receipt_image = `/uploads/${imageFilename}`;
+    }
+
     res.json(parsed);
   } catch(err) {
     console.error('OCR error:', err.message);
-    res.status(500).json({ error: `OCR処理失敗: ${err.message}`, receipt_image: `/uploads/${imageFilename}` });
+    res.status(500).json({ error: `OCR処理失敗: ${err.message}` });
   }
 });
 

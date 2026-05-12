@@ -15,10 +15,10 @@ const SCHEMAS = {
     sheet: '小口精算',
     cols:    ['_id','no','date','store','payee','item_name','account_category',
               'quantity','unit_price','amount','tax_rate','tax_amount','total_amount',
-              'tax_category','notes','receipt_image','created_at','updated_at'],
+              'tax_category','notes','receipt_image','receipt_drive_url','created_at','updated_at'],
     headers: ['ID','No','日付','事業所','支払先','品目名','勘定科目',
               '数量','単価','金額','税率','消費税額','合計金額',
-              '税区分','備考','領収書画像','作成日時','更新日時'],
+              '税区分','備考','領収書画像(サムネ)','領収書Drive URL','作成日時','更新日時'],
     nums: ['no','quantity','unit_price','amount','tax_amount','total_amount'],
   },
   payments: {
