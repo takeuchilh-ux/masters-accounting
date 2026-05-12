@@ -1,5 +1,12 @@
 * { box-sizing: border-box; }
 
+/* 横スクロール・はみ出し防止 */
+html, body { overflow-x: hidden; max-width: 100%; }
+
+/* グリッドアイテムが割り当て列幅を超えないようにする
+   （select / input[type=date] の固有最小幅を無効化） */
+.grid > * { min-width: 0; }
+
 .modal-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
@@ -39,6 +46,8 @@
 }
 .form-input {
   width: 100%;
+  min-width: 0;     /* グリッド内での固有幅による溢れを防ぐ */
+  max-width: 100%;  /* 親要素を超えない */
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
