@@ -7,6 +7,15 @@ html, body { overflow-x: hidden; max-width: 100%; }
    （select / input[type=date] の固有最小幅を無効化） */
 .grid > * { min-width: 0; }
 
+/* iOS Safari: date/month inputの固有最小幅を強制リセット */
+input[type="date"],
+input[type="month"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
 .modal-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
