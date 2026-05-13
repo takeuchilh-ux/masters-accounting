@@ -4,10 +4,17 @@
  */
 const cloudinary = require('cloudinary').v2;
 
+// 認証情報は必ず環境変数から取得（ハードコード禁止）
+const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  console.warn('警告: Cloudinaryの環境変数が設定されていません。レシート画像のアップロードは無効です。');
+}
+
 cloudinary.config({
-  cloud_name:  process.env.CLOUDINARY_CLOUD_NAME || 'ddlkul4s3',
-  api_key:     process.env.CLOUDINARY_API_KEY    || '863228547375371',
-  api_secret:  process.env.CLOUDINARY_API_SECRET || 'OVvmcw2GMPtydNSft0XmxdPIvyY',
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key:    CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
 });
 
 /**
@@ -17,12 +24,16 @@ cloudinary.config({
  * @returns {{ fileId, viewUrl, imageUrl }}
  */
 async function uploadToDrive(filePath, filename, mimeType = 'image/jpeg') {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+    throw new Error('Cloudinaryの環境変数が設定されていません。');
+  }
+
   const publicId = 'receipts/' + filename.replace(/\.[^.]+$/, '');
 
   const result = await cloudinary.uploader.upload(filePath, {
-    public_id:    publicId,
+    public_id:     publicId,
     resource_type: 'image',
-    overwrite:    true,
+    overwrite:     true,
   });
 
   return {
