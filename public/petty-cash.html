@@ -116,6 +116,27 @@
     </div>
   </main>
 
+  <!-- レシートプレビューモーダル -->
+  <div id="receipt-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeReceiptModal()">
+    <div class="bg-white rounded-xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 flex-shrink-0">
+        <div>
+          <p class="font-semibold text-gray-800 text-sm" id="receipt-modal-payee"></p>
+          <p class="text-xs text-gray-400" id="receipt-modal-date"></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="receipt-modal-link" href="#" target="_blank" class="btn-secondary text-xs px-3 py-1.5">別タブで開く ↗</a>
+          <button onclick="closeReceiptModal()" class="text-gray-400 hover:text-gray-600 ml-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="overflow-y-auto flex-1 p-4 flex items-center justify-center bg-gray-50">
+        <img id="receipt-modal-img" src="" alt="レシート" class="max-w-full max-h-full object-contain rounded-lg shadow" style="max-height:75vh">
+      </div>
+    </div>
+  </div>
+
   <!-- 入力モーダル -->
   <div id="modal" class="modal-backdrop hidden">
     <div class="modal-box">
@@ -488,7 +509,7 @@
           <td class="px-3 py-2.5 text-center"><span class="tag tag-gray">${r.tax_rate ?? '-'}</span></td>
           <td class="px-3 py-2.5 text-right font-medium text-gray-800">${r.total_amount != null ? '¥' + Math.round(r.total_amount).toLocaleString() : '-'}</td>
           <td class="px-3 py-2.5 text-center">
-            ${r.receipt_image ? `<a href="${r.receipt_drive_url || r.receipt_image}" target="_blank" class="text-indigo-500 hover:text-indigo-700 text-xs">表示</a>` : '<span class="text-gray-300 text-xs">なし</span>'}
+            ${r.receipt_image ? `<button onclick="showReceiptModal('${(r.receipt_drive_url || r.receipt_image).replace(/'/g,"\\'")}','${(r.payee||'').replace(/'/g,"\\'")}','${r.date||''}')" class="btn-edit px-2 py-1 text-xs">表示</button>` : '<span class="text-gray-300 text-xs">なし</span>'}
           </td>
           <td class="px-3 py-2.5 text-center">
             <div class="flex gap-1 justify-center">
@@ -894,6 +915,18 @@
       if (saved  > 0) showToast(`${saved}件を保存しました`, 'success');
       if (failed > 0) showToast(`${failed}件の保存に失敗しました`, 'error');
       if (saved  > 0) { closeMultiModal(); loadList(); }
+    }
+
+    function showReceiptModal(url, payee, date) {
+      document.getElementById('receipt-modal-img').src = url;
+      document.getElementById('receipt-modal-link').href = url;
+      document.getElementById('receipt-modal-payee').textContent = payee || 'レシート';
+      document.getElementById('receipt-modal-date').textContent = date || '';
+      document.getElementById('receipt-modal').classList.remove('hidden');
+    }
+    function closeReceiptModal() {
+      document.getElementById('receipt-modal').classList.add('hidden');
+      document.getElementById('receipt-modal-img').src = '';
     }
 
     initMasters().then(() => loadList());
