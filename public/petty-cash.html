@@ -117,8 +117,8 @@
   </main>
 
   <!-- レシートプレビューモーダル -->
-  <div id="receipt-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeReceiptModal()">
-    <div class="bg-white rounded-xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh">
+  <div id="receipt-modal" class="modal-backdrop hidden" style="z-index:60;align-items:flex-start;padding-top:1rem" onclick="if(event.target===this)closeReceiptModal()">
+    <div class="bg-white rounded-xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:96vh">
       <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 flex-shrink-0">
         <div>
           <p class="font-semibold text-gray-800 text-sm" id="receipt-modal-payee"></p>
