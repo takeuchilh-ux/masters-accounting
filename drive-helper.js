@@ -1,69 +1,79 @@
 /**
- * 画像ストレージヘルパー（Cloudinary）
- * レシート画像をCloudinaryにアップロードする
+ * 画像ストレージヘルパー（Supabase Storage）
+ * レシート画像をSupabase Storageにアップロードする
  */
-const cloudinary = require('cloudinary').v2;
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
 
-// 認証情報は必ず環境変数から取得（ハードコード禁止）
-const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
+const BUCKET = 'receipts';
 
-if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-  console.warn('警告: Cloudinaryの環境変数が設定されていません。レシート画像のアップロードは無効です。');
+// 遅延初期化（.env が読み込まれてから初めて使われる）
+let _supabase = null;
+function getClient() {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY
+    );
+  }
+  return _supabase;
 }
 
-cloudinary.config({
-  cloud_name: CLOUDINARY_CLOUD_NAME,
-  api_key:    CLOUDINARY_API_KEY,
-  api_secret: CLOUDINARY_API_SECRET,
-});
-
 /**
- * ファイルをCloudinaryにアップロードして公開URLを返す
+ * ファイルをSupabase Storageにアップロードして公開URLを返す
  * @param {string} filePath - アップロードするファイルのパス
- * @param {string} filename - 保存するファイル名（拡張子なし）
+ * @param {string} filename - 保存するファイル名
+ * @param {string} mimeType - MIMEタイプ
  * @returns {{ fileId, viewUrl, imageUrl }}
  */
 async function uploadToDrive(filePath, filename, mimeType = 'image/jpeg') {
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    throw new Error('Cloudinaryの環境変数が設定されていません。');
-  }
+  const fileBuffer = fs.readFileSync(filePath);
+  const ext = path.extname(filename) || '.jpg';
+  const baseName = path.basename(filename, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const storageKey = `receipts/${Date.now()}_${baseName}${ext}`;
 
-  const publicId = 'receipts/' + filename.replace(/\.[^.]+$/, '');
+  const { error } = await getClient().storage
+    .from(BUCKET)
+    .upload(storageKey, fileBuffer, {
+      contentType: mimeType,
+      upsert: true,
+    });
 
-  const result = await cloudinary.uploader.upload(filePath, {
-    public_id:     publicId,
-    resource_type: 'image',
-    overwrite:     true,
-  });
+  if (error) throw new Error(`Supabase Storageアップロードエラー: ${error.message}`);
+
+  const { data } = getClient().storage.from(BUCKET).getPublicUrl(storageKey);
+  const publicUrl = data.publicUrl;
 
   return {
-    fileId:   result.public_id,
-    viewUrl:  result.secure_url,
-    imageUrl: result.secure_url,
+    fileId:   storageKey,
+    viewUrl:  publicUrl,
+    imageUrl: publicUrl,
   };
 }
 
 /**
- * CloudinaryからファイルをIDで削除する
- * @param {string} fileId - Cloudinaryのpublic_id
+ * Supabase StorageからファイルをIDで削除する
+ * @param {string} fileId - Supabase StorageのstorageKey（例: "receipts/..."）
  */
 async function deleteFromDrive(fileId) {
+  if (!fileId) return;
   try {
-    await cloudinary.uploader.destroy(fileId, { resource_type: 'image' });
+    await getClient().storage.from(BUCKET).remove([fileId]);
   } catch(e) {
-    console.warn('Cloudinary削除エラー（無視）:', e.message);
+    console.warn('Supabase Storage削除エラー（無視）:', e.message);
   }
 }
 
 /**
- * URLからCloudinary public_idを抽出する
+ * URLからSupabase StorageのstorageKeyを抽出する
  */
 function extractFileId(urlOrPath) {
   if (!urlOrPath) return null;
-  // Cloudinary URL: https://res.cloudinary.com/cloud/image/upload/v123/receipts/filename.jpg
-  const m = urlOrPath.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+  // Supabase Storage URL: https://xxx.supabase.co/storage/v1/object/public/receipts/receipts/filename.jpg
+  const m = urlOrPath.match(/\/object\/public\/receipts\/(.+)$/);
   if (m) return m[1];
-  // すでにpublic_id形式の場合
+  // すでにstorageKey形式（"receipts/..."）の場合
   if (!urlOrPath.startsWith('http') && !urlOrPath.startsWith('/')) return urlOrPath;
   return null;
 }

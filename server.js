@@ -21,7 +21,7 @@ try {
   }
 } catch(_) {}
 
-const { pettyCash, payments, commissions, transfers, masters, initMasters } = require('./db');
+const { pettyCash, payments, commissions, transfers, masters, initSupabase } = require('./supabase-db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -547,7 +547,7 @@ app.get('/api/summary', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-initMasters().then(() => {
+initSupabase().then(() => {
   if (require.main === module) {
     app.listen(PORT, () => console.log(`会計管理アプリ起動中: http://localhost:${PORT}`));
   }
