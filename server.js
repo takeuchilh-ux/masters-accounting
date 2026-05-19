@@ -515,10 +515,12 @@ app.get('/api/summary', async (req, res) => {
     const storeMap = {};
     for (const r of pcAll) {
       const s = r.store || '不明';
-      storeMap[s] = (storeMap[s] || 0) + (r.total_amount || 0);
+      if (!storeMap[s]) storeMap[s] = { total: 0, count: 0 };
+      storeMap[s].total += r.total_amount || 0;
+      storeMap[s].count += 1;
     }
     const byStore = Object.entries(storeMap)
-      .map(([store, total]) => ({ store, total }))
+      .map(([store, v]) => ({ store, ...v }))
       .sort((a, b) => b.total - a.total);
 
     // 銀行口座別集計（支払明細）
