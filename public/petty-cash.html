@@ -709,7 +709,8 @@
         if (data.tax_amount != null) document.getElementById('f-tax-amount').value = data.tax_amount;
         if (data.total_amount != null) document.getElementById('f-total-amount').value = data.total_amount;
         if (data.tax_category)       document.getElementById('f-tax-category').value = data.tax_category;
-        if (data.amount != null)     calcTax();
+        // レシートに税抜金額と消費税額が両方明記されている場合のみ再計算
+        if (data.amount != null && data.tax_amount != null) calcTax();
 
         const filled = [data.payee, data.item_name, data.date, data.total_amount].filter(v => v != null).length;
         if (filled >= 2) {
