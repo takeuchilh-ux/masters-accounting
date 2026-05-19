@@ -66,6 +66,7 @@
     <!-- タブ -->
     <div class="flex gap-2 mb-6 border-b border-gray-200 flex-wrap">
       <button onclick="switchTab('store')"           id="tab-store"           class="tab-btn active px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">事業所</button>
+      <button onclick="switchTab('purchaser')"       id="tab-purchaser"       class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">購入者</button>
       <button onclick="switchTab('account_category')" id="tab-account_category" class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">勘定科目</button>
       <button onclick="switchTab('bank_account')"    id="tab-bank_account"    class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">銀行口座</button>
       <button onclick="switchTab('payment_method')"  id="tab-payment_method"  class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">支払方法</button>
@@ -102,6 +103,7 @@
 
     const LABELS = {
       store: '事業所',
+      purchaser: '購入者',
       account_category: '勘定科目',
       bank_account: '銀行口座',
       payment_method: '支払方法',

@@ -78,4 +78,25 @@ function extractFileId(urlOrPath) {
   return null;
 }
 
-module.exports = { uploadToDrive, deleteFromDrive, extractFileId };
+/**
+ * Supabase Storage内でファイルを移動（リネーム）する
+ * @param {string} fromKey - 現在のstorageKey
+ * @param {string} toKey   - 新しいstorageKey
+ * @returns {{ fileId, url } | null}
+ */
+async function moveFile(fromKey, toKey) {
+  try {
+    const { error } = await getClient().storage.from(BUCKET).move(fromKey, toKey);
+    if (error) {
+      console.warn('Storage move failed:', error.message);
+      return null;
+    }
+    const { data } = getClient().storage.from(BUCKET).getPublicUrl(toKey);
+    return { fileId: toKey, url: data.publicUrl };
+  } catch(e) {
+    console.warn('Storage move error:', e.message);
+    return null;
+  }
+}
+
+module.exports = { uploadToDrive, deleteFromDrive, extractFileId, moveFile };

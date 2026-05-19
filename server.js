@@ -8,7 +8,35 @@ const cookieParser = require('cookie-parser');
 const Anthropic = require('@anthropic-ai/sdk');
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
-const { uploadToDrive, deleteFromDrive, extractFileId } = require('./drive-helper');
+const { uploadToDrive, deleteFromDrive, extractFileId, moveFile } = require('./drive-helper');
+
+// ── 事業所コード → ファイル名プレフィックス ─────────────────────
+const STORE_PREFIX = {
+  '藤沢事業所':         'F',
+  '藤沢市民病院':       'FM',
+  '藤沢湘南台病院':     'FS',
+  '平塚市民病院':       'HM',
+  '西横浜国際総合病院': 'NY',
+  '休日診療所':         'K',
+};
+
+async function renameReceiptFile(storeName, fileId) {
+  if (!storeName || !fileId) return null;
+  const prefix = STORE_PREFIX[storeName] || storeName[0].toUpperCase();
+  try {
+    // その事業所の既存レシート枚数を取得して次の連番を決定
+    const existing = await pettyCash.find({ store: storeName });
+    const count = existing.filter(r => r.receipt_image).length + 1;
+    const seq = String(count).padStart(3, '0');
+    const ext = path.extname(fileId) || '.jpg';
+    const newKey = `receipts/${prefix}_${seq}${ext}`;
+    const result = await moveFile(fileId, newKey);
+    return result;
+  } catch(e) {
+    console.warn('renameReceiptFile error:', e.message);
+    return null;
+  }
+}
 
 // .env 読み込み
 try {
@@ -178,7 +206,19 @@ app.get('/api/petty-cash/:id', async (req, res) => {
 
 app.post('/api/petty-cash', async (req, res) => {
   try {
-    const inserted = await pettyCash.insert({ ...req.body, created_at: new Date().toISOString() });
+    const data = { ...req.body, created_at: new Date().toISOString() };
+    // レシート画像のリネーム（事業所プレフィックス + 連番）
+    if (data.store && data.receipt_image) {
+      const fileId = extractFileId(data.receipt_image);
+      if (fileId) {
+        const renamed = await renameReceiptFile(data.store, fileId);
+        if (renamed) {
+          data.receipt_image     = renamed.url;
+          data.receipt_drive_url = renamed.url;
+        }
+      }
+    }
+    const inserted = await pettyCash.insert(data);
     res.json({ id: inserted._id });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

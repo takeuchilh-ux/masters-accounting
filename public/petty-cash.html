@@ -120,6 +120,7 @@
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">No.</th>
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">日付</th>
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">事業所</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">購入者</th>
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払先</th>
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">品名</th>
             <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">勘定科目</th>
@@ -131,11 +132,11 @@
           </tr>
         </thead>
         <tbody id="list-body">
-          <tr><td colspan="11" class="text-center py-10 text-gray-400">読み込み中...</td></tr>
+          <tr><td colspan="12" class="text-center py-10 text-gray-400">読み込み中...</td></tr>
         </tbody>
         <tfoot>
           <tr class="border-t-2 border-gray-300 bg-gray-50">
-            <td colspan="6" class="px-3 py-3 text-sm font-semibold text-gray-600">合計</td>
+            <td colspan="7" class="px-3 py-3 text-sm font-semibold text-gray-600">合計</td>
             <td class="px-3 py-3 text-right font-semibold text-gray-800" id="sum-amount">¥0</td>
             <td></td>
             <td class="px-3 py-3 text-right font-semibold text-gray-800" id="sum-total">¥0</td>
@@ -216,13 +217,26 @@
                 <option value="">選択してください</option>
               </select>
               <input type="text" id="f-store-form" class="form-input mt-2 hidden" placeholder="事業所名を直接入力" oninput="onComboInput('store')">
-              <button type="button" id="btn-add-store" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700" onclick="addToMaster('store')">＋ マスタに追加</button>
+              <button type="button" id="btn-add-store" class="hidden mt-1 text-xs text-blue-500 hover:text-blue-700" onclick="addToMaster('store')">＋ マスタに追加</button>
             </div>
+            <!-- 購入者コンボボックス -->
+            <div>
+              <label class="form-label">購入者</label>
+              <select id="f-purchaser-sel" class="form-input" onchange="onComboSelChange('purchaser')">
+                <option value="">選択してください</option>
+              </select>
+              <input type="text" id="f-purchaser-form" class="form-input mt-2 hidden" placeholder="購入者名を直接入力" oninput="onComboInput('purchaser')">
+              <button type="button" id="btn-add-purchaser" class="hidden mt-1 text-xs text-blue-500 hover:text-blue-700" onclick="addToMaster('purchaser')">＋ マスタに追加</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <!-- 支払先 -->
             <div>
               <label class="form-label">支払先（店名など）<span class="text-red-500">*</span></label>
               <input type="text" id="f-payee" class="form-input" required placeholder="例：コンビニ、ホームセンター">
             </div>
+            <div></div>
           </div>
 
           <div class="mb-4">
@@ -374,8 +388,9 @@
 
     // ── セレクト+直接入力コンボ ──────────────────────────────────
     const COMBOS = {
-      store:            { selId: 'f-store-sel',   inputId: 'f-store-form',       btnId: 'btn-add-store',            masterType: 'store' },
-      account_category: { selId: 'f-account-sel', inputId: 'f-account-category', btnId: 'btn-add-account-category', masterType: 'account_category' },
+      store:            { selId: 'f-store-sel',     inputId: 'f-store-form',       btnId: 'btn-add-store',            masterType: 'store' },
+      account_category: { selId: 'f-account-sel',   inputId: 'f-account-category', btnId: 'btn-add-account-category', masterType: 'account_category' },
+      purchaser:        { selId: 'f-purchaser-sel',  inputId: 'f-purchaser-form',   btnId: 'btn-add-purchaser',        masterType: 'purchaser' },
     };
 
     function fillSelect(selectId, values) {
@@ -481,11 +496,12 @@
     }
 
     async function initMasters() {
-      const [stores, accounts, taxCats] = await Promise.all([
-        loadMaster('store'), loadMaster('account_category'), loadMaster('tax_category')
+      const [stores, accounts, taxCats, purchasers] = await Promise.all([
+        loadMaster('store'), loadMaster('account_category'), loadMaster('tax_category'), loadMaster('purchaser')
       ]);
       fillSelect('f-store-sel', stores);
       fillSelect('f-account-sel', accounts);
+      fillSelect('f-purchaser-sel', purchasers);
       fillDatalist('list-tax-category', taxCats);
 
       // フィルター用セレクトボックス
@@ -520,7 +536,7 @@
       document.getElementById('list-count').textContent = data.length;
       let sumAmt = 0, sumTotal = 0;
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center py-10 text-gray-400">データがありません</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-10 text-gray-400">データがありません</td></tr>';
         document.getElementById('sum-amount').textContent = '¥0';
         document.getElementById('sum-total').textContent = '¥0';
         return;
@@ -532,6 +548,7 @@
           <td class="px-3 py-2.5 text-gray-500">${r.no ?? '-'}</td>
           <td class="px-3 py-2.5 text-gray-700 whitespace-nowrap">${r.date ?? '-'}</td>
           <td class="px-3 py-2.5"><span class="tag tag-blue">${r.store ?? '-'}</span></td>
+          <td class="px-3 py-2.5 text-gray-700 whitespace-nowrap">${r.purchaser ?? '-'}</td>
           <td class="px-3 py-2.5 text-gray-700 max-w-[130px] truncate">${r.payee ?? '-'}</td>
           <td class="px-3 py-2.5 text-gray-700 max-w-[130px] truncate">${r.item_name ?? '-'}</td>
           <td class="px-3 py-2.5"><span class="tag tag-green">${r.account_category ?? '-'}</span></td>
@@ -575,6 +592,7 @@
       document.getElementById('f-no').value = r.no ?? '';
       document.getElementById('f-date').value = r.date ?? '';
       setComboValue('store', r.store ?? '');
+      setComboValue('purchaser', r.purchaser ?? '');
       document.getElementById('f-payee').value = r.payee ?? '';
       document.getElementById('f-item-name').value = r.item_name ?? '';
       setComboValue('account_category', r.account_category ?? '');
@@ -612,6 +630,7 @@
         no: document.getElementById('f-no').value || null,
         date: document.getElementById('f-date').value,
         store: getComboValue('store'),
+        purchaser: getComboValue('purchaser'),
         payee: document.getElementById('f-payee').value,
         item_name: document.getElementById('f-item-name').value,
         account_category: getComboValue('account_category'),
