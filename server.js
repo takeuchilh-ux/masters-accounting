@@ -344,16 +344,22 @@ app.get('/api/summary', async (req, res) => {
   try {
     const q = {};
     if (req.query.store) q.store = req.query.store;
-    if (req.query.month) { q.date = { $gte: req.query.month + '-01', $lte: req.query.month + '-31' }; }
+    if (req.query.month) {
+      const [y, m] = req.query.month.split('-').map(Number);
+      const from = `${y}-${String(m).padStart(2,'0')}-01`;
+      const nextMonth = m === 12 ? `${y+1}-01-01` : `${y}-${String(m+1).padStart(2,'0')}-01`;
+      q.date = { $gte: from, $lt: nextMonth };
+    }
 
     const all = await pettyCash.find(q);
-    const total = all.reduce((s, r) => s + (r.total_amount || 0), 0);
+    const toNum = v => Number(v) || 0;
+    const total = all.reduce((s, r) => s + toNum(r.total_amount), 0);
 
     const storeMap = {};
     for (const r of all) {
       const s = r.store || '不明';
       if (!storeMap[s]) storeMap[s] = { total: 0, count: 0 };
-      storeMap[s].total += r.total_amount || 0;
+      storeMap[s].total += toNum(r.total_amount);
       storeMap[s].count += 1;
     }
     const byStore = Object.entries(storeMap)
@@ -363,7 +369,7 @@ app.get('/api/summary', async (req, res) => {
     const accMap = {};
     for (const r of all) {
       const a = r.account_category || '不明';
-      accMap[a] = (accMap[a] || 0) + (r.total_amount || 0);
+      accMap[a] = (accMap[a] || 0) + toNum(r.total_amount);
     }
     const byAccount = Object.entries(accMap)
       .map(([account_category, total]) => ({ account_category, total }))
