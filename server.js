@@ -424,7 +424,29 @@ app.get('/api/summary', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-initSupabase().then(() => {
+async function seedUsers() {
+  const DEFAULT_USERS = [
+    { email: 'takeuchi.lh@gmail.com',         password: '0000', role: 'admin', name: '竹内' },
+    { email: 'y.nakajima@master-staff.co.jp', password: '1111', role: 'user',  name: '中島' },
+  ];
+  for (const u of DEFAULT_USERS) {
+    const exists = await usersDb.findOne({ email: u.email });
+    if (!exists) {
+      await usersDb.insert({ email: u.email, password_hash: hashPassword(u.password), role: u.role, name: u.name });
+      console.log(`✅ ユーザー作成: ${u.email}`);
+    } else {
+      // 既存ユーザーのハッシュを現在のJWT_SECRETで再計算して更新
+      const correctHash = hashPassword(u.password);
+      if (exists.password_hash !== correctHash) {
+        await usersDb.update({ email: u.email }, { $set: { password_hash: correctHash } });
+        console.log(`🔄 パスワードハッシュ更新: ${u.email}`);
+      }
+    }
+  }
+}
+
+initSupabase().then(async () => {
+  await seedUsers();
   if (require.main === module) {
     app.listen(PORT, () => console.log(`小口精算システム起動: http://localhost:${PORT}`));
   }
