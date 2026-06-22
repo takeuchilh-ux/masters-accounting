@@ -248,6 +248,17 @@
   </div>
 </div>
 
+<!-- ====== 確認ダイアログ ====== -->
+<div id="confirm-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+    <p id="confirm-msg" class="text-gray-800 text-sm font-medium mb-5 text-center"></p>
+    <div class="flex gap-3">
+      <button id="confirm-cancel" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
+      <button id="confirm-ok" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600">削除</button>
+    </div>
+  </div>
+</div>
+
 <!-- ====== 詳細モーダル ====== -->
 <div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center" onclick="closeDetailModal()">
   <div class="bg-white w-full max-w-lg md:rounded-2xl rounded-t-2xl shadow-2xl max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
@@ -768,7 +779,7 @@ function closeManual() {
 
 async function submitForm() {
   const date = document.getElementById('f-date').value;
-  if (!date) { alert('日付を入力してください'); return; }
+  if (!date) { showToast('日付を入力してください', 'error'); return; }
   const payload = {
     no: document.getElementById('f-no').value,
     date,
@@ -797,7 +808,7 @@ async function submitForm() {
     }
     closeManual();
     loadList();
-  } catch(e) { alert('保存エラー: ' + e.message); }
+  } catch(e) { showToast('保存に失敗しました', 'error'); }
 }
 
 // ─── 一覧 ──────────────────────────────────────────────
@@ -878,9 +889,11 @@ function editRow(r) {
 }
 
 async function deleteRow(id) {
-  if (!confirm('削除しますか？')) return;
-  await fetch(`/api/petty-cash/${id}`, { method: 'DELETE' });
-  loadList();
+  showConfirm('このレコードを削除しますか？', async () => {
+    await fetch(`/api/petty-cash/${id}`, { method: 'DELETE' });
+    loadList();
+    showToast('削除しました');
+  });
 }
 
 function exportCsv() {
@@ -954,6 +967,14 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
+}
+
+function showConfirm(msg, onOk) {
+  const el = document.getElementById('confirm-modal');
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok').onclick = () => { el.classList.add('hidden'); onOk(); };
+  document.getElementById('confirm-cancel').onclick = () => el.classList.add('hidden');
+  el.classList.remove('hidden');
 }async function logout() {
   await fetch('/api/logout', { method: 'POST' });
   location.href = '/login.html';
