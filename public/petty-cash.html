@@ -311,11 +311,11 @@
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
     <span class="text-xs mt-0.5 font-medium">一覧</span>
   </a>
-  <button onclick="openWizard()" class="flex-1 flex flex-col items-center py-1 text-gray-400">
-    <div class="w-12 h-12 -mt-5 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+  <button onclick="openWizard()" class="flex-1 flex flex-col items-center py-2 text-gray-400">
+    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
     </div>
-    <span class="text-xs mt-1">新規</span>
+    <span class="text-xs mt-0.5">新規</span>
   </button>
   <a href="master.html" class="flex-1 flex flex-col items-center py-2 text-gray-400">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -487,6 +487,10 @@ function openWizard() {
   document.getElementById('thumb-list').classList.add('hidden');
   document.getElementById('step1-next-wrap').classList.add('hidden');
   document.getElementById('thumb-list').innerHTML = '';
+  // ボタン状態をリセット
+  const btnSave = document.getElementById('btn-save-all');
+  btnSave.disabled = false;
+  btnSave.textContent = 'まとめて保存';
   updateWizardStep(1);
 }
 
@@ -686,6 +690,7 @@ async function saveAll() {
   const btn = document.getElementById('btn-save-all');
   btn.disabled = true;
   btn.textContent = '保存中...';
+  btn.classList.remove('hidden');
   let saved = 0;
   for (const ch of checks) {
     const r = wizardResults[parseInt(ch.dataset.idx)];
