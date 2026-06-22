@@ -28,10 +28,13 @@
 
 <main class="max-w-5xl mx-auto px-4 py-6">
   <!-- 月フィルター -->
-  <div class="flex items-center gap-3 mb-6">
-    <label class="text-sm font-medium text-gray-600">集計月</label>
-    <input type="month" id="filter-month" class="form-input w-40" onchange="loadSummary()">
-    <button onclick="clearMonth()" class="text-sm text-blue-600 hover:underline">全期間</button>
+  <div class="flex items-center gap-2 mb-6">
+    <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+      <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <span class="text-xs text-gray-400 whitespace-nowrap">集計月</span>
+      <input type="month" id="filter-month" class="text-sm font-medium text-gray-700 outline-none bg-transparent" onchange="loadSummary()">
+    </div>
+    <button onclick="clearMonth()" class="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap">全期間</button>
   </div>
 
   <!-- サマリーカード -->
