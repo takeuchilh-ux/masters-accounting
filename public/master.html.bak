@@ -1,0 +1,266 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.png" type="image/png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マスタ管理 | 会計管理システム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeSidebar()"></div>
+  <aside id="sidebar" class="fixed top-0 left-0 h-full w-60 bg-blue-900 text-white z-50 flex flex-col shadow-2xl" style="transform:translateX(-100%);transition:transform .25s ease">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-blue-700/50">
+      <div class="flex items-center gap-2">
+        <svg class="w-7 h-7 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
+        <span class="font-bold text-sm">会計管理システム</span>
+      </div>
+      <button onclick="closeSidebar()" class="p-1.5 rounded hover:bg-blue-700 text-blue-300 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="px-4 py-2 border-b border-blue-800/50">
+      <p id="sb-email" class="text-xs text-blue-300 truncate"></p>
+    </div>
+    <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      <a href="index.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        ダッシュボード
+      </a>
+      <a href="petty-cash.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+        小口精算
+      </a>
+      <a href="payments.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        会計項目別支払
+      </a>
+      <a href="master.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        マスタ管理
+      </a>
+    </nav>
+    <div class="p-3 border-t border-blue-800/50">
+      <button onclick="logout()" class="w-full py-2 px-3 rounded-lg bg-blue-800/60 hover:bg-red-700 text-sm font-medium transition-colors text-left flex items-center gap-2 text-blue-100">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        ログアウト
+      </button>
+    </div>
+  </aside>
+
+  <header class="bg-blue-700 text-white shadow-lg z-30 relative">
+    <div class="px-4 py-3 flex items-center gap-3">
+      <button onclick="openSidebar()" class="p-2 rounded-md hover:bg-blue-600 focus:outline-none flex-shrink-0" aria-label="メニュー">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <svg class="w-7 h-7 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
+      <span class="text-xl font-bold">会計管理システム</span>
+      <span id="user-email" class="ml-auto text-blue-200 text-xs hidden sm:block"></span>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">マスタ管理</h1>
+
+    <!-- タブ -->
+    <div class="flex gap-2 mb-6 border-b border-gray-200 flex-wrap">
+      <button onclick="switchTab('store')"           id="tab-store"           class="tab-btn active px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">事業所</button>
+      <button onclick="switchTab('purchaser')"       id="tab-purchaser"       class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">購入者</button>
+      <button onclick="switchTab('account_category')" id="tab-account_category" class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">勘定科目</button>
+      <button onclick="switchTab('bank_account')"    id="tab-bank_account"    class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">銀行口座</button>
+      <button onclick="switchTab('payment_method')"  id="tab-payment_method"  class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">支払方法</button>
+      <button onclick="switchTab('tax_category')"    id="tab-tax_category"    class="tab-btn px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors">税区分</button>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <!-- 追加フォーム -->
+      <div class="p-4 border-b border-gray-100 flex gap-3">
+        <input type="text" id="new-value" class="form-input flex-1" placeholder="新しい値を入力..." onkeydown="if(event.key==='Enter'){event.preventDefault();addItem()}">
+        <button onclick="addItem()" class="btn-primary flex items-center gap-2 whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          追加
+        </button>
+      </div>
+
+      <!-- リスト -->
+      <div id="master-list" class="divide-y divide-gray-100">
+        <div class="text-center py-8 text-gray-400">読み込み中...</div>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .tab-btn { color: #6b7280; border-color: transparent; }
+    .tab-btn:hover { color: #4f46e5; }
+    .tab-btn.active { color: #4f46e5; border-color: #4f46e5; }
+    .edit-input { border: 1px solid #6366f1; border-radius: 0.375rem; padding: 0.3rem 0.5rem; font-size: 0.875rem; outline: none; width: 100%; }
+  </style>
+
+  <script>
+    let currentType = 'store';
+    let masterData = [];
+
+    const LABELS = {
+      store: '事業所',
+      purchaser: '購入者',
+      account_category: '勘定科目',
+      bank_account: '銀行口座',
+      payment_method: '支払方法',
+      tax_category: '税区分',
+    };
+
+    function switchTab(type) {
+      currentType = type;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + type).classList.add('active');
+      document.getElementById('new-value').placeholder = `新しい${LABELS[type]}を入力...`;
+      loadList();
+    }
+
+    async function loadList() {
+      try {
+        masterData = await fetch('/api/masters?type=' + currentType).then(r => r.json());
+        renderList();
+      } catch(e) { showToast('読み込みエラー', 'error'); }
+    }
+
+    function renderList() {
+      const container = document.getElementById('master-list');
+      if (masterData.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-gray-400">データがありません。上のフォームから追加してください。</div>';
+        return;
+      }
+      container.innerHTML = masterData.map((r, i) => {
+        const safeVal = r.value.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+        return `
+        <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 group" id="row-${r._id}" data-value="${safeVal}">
+          <span class="text-gray-400 text-sm w-6 text-right">${i + 1}</span>
+          <span class="flex-1 text-gray-800 text-sm font-medium" id="label-${r._id}">${r.value}</span>
+          <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onclick="startEdit('${r._id}')" class="btn-edit text-xs">編集</button>
+            <button onclick="deleteItem('${r._id}')" class="btn-danger text-xs">削除</button>
+            <button onclick="moveUp(${i})"   class="btn-secondary text-xs py-1 px-2" ${i===0?'disabled':''}>↑</button>
+            <button onclick="moveDown(${i})" class="btn-secondary text-xs py-1 px-2" ${i===masterData.length-1?'disabled':''}>↓</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function startEdit(id) {
+      const row = document.getElementById('row-' + id);
+      const currentValue = row.dataset.value;
+      const labelEl = document.getElementById('label-' + id);
+      const safeVal = currentValue.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      labelEl.innerHTML = `<input class="edit-input" id="edit-input-${id}" value="${safeVal}" onkeydown="if(event.key==='Enter')saveEdit('${id}');if(event.key==='Escape')cancelEdit('${id}')">`;
+      row.querySelector('.flex.gap-2').innerHTML = `
+        <button onclick="saveEdit('${id}')" class="btn-primary text-xs">保存</button>
+        <button onclick="cancelEdit('${id}')" class="btn-secondary text-xs">キャンセル</button>
+      `;
+      document.getElementById('edit-input-' + id)?.focus();
+    }
+
+    async function saveEdit(id) {
+      const input = document.getElementById('edit-input-' + id);
+      if (!input) return;
+      const newValue = input.value.trim();
+      if (!newValue) return showToast('値を入力してください', 'error');
+      await fetch('/api/masters/' + id, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ value: newValue })
+      });
+      showToast('更新しました', 'success');
+      loadList();
+    }
+
+    function cancelEdit(id) {
+      loadList();
+    }
+
+    async function addItem() {
+      const val = document.getElementById('new-value').value.trim();
+      if (!val) return showToast('値を入力してください', 'error');
+      const res = await fetch('/api/masters', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ type: currentType, value: val })
+      }).then(r => r.json());
+      if (res.existing) { showToast('すでに存在します', 'error'); return; }
+      document.getElementById('new-value').value = '';
+      showToast('追加しました', 'success');
+      loadList();
+    }
+
+    async function deleteItem(id) {
+      const row = document.getElementById('row-' + id);
+      const value = row.dataset.value;
+      if (!confirm(`「${value}」を削除しますか？`)) return;
+      await fetch('/api/masters/' + id, { method: 'DELETE' });
+      showToast('削除しました', 'success');
+      loadList();
+    }
+
+    async function moveUp(idx) {
+      if (idx === 0) return;
+      const a = masterData[idx], b = masterData[idx - 1];
+      await Promise.all([
+        fetch('/api/masters/' + a._id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ value: a.value, order: b.order }) }),
+        fetch('/api/masters/' + b._id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ value: b.value, order: a.order }) }),
+      ]);
+      loadList();
+    }
+
+    async function moveDown(idx) {
+      if (idx === masterData.length - 1) return;
+      const a = masterData[idx], b = masterData[idx + 1];
+      await Promise.all([
+        fetch('/api/masters/' + a._id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ value: a.value, order: b.order }) }),
+        fetch('/api/masters/' + b._id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ value: b.value, order: a.order }) }),
+      ]);
+      loadList();
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    }
+
+    loadList();
+  </script>
+  <script>
+  function openSidebar() {
+    document.getElementById('sidebar').style.transform = 'translateX(0)';
+    document.getElementById('sidebar-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').style.transform = 'translateX(-100%)';
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  (function() {
+    const page = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sidebar-link').forEach(a => {
+      if (a.getAttribute('href') === page) a.classList.add('active');
+    });
+  })();
+  (async function() {
+    try {
+      const res = await fetch('/api/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const { email } = await res.json();
+      ['user-email','sb-email'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = email;
+      });
+    } catch { window.location.href = '/login.html'; }
+  })();
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+  }
+  </script>
+</body>
+</html>

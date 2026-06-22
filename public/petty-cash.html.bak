@@ -1,0 +1,1025 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.png" type="image/png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小口精算 | 会計管理システム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeSidebar()"></div>
+  <aside id="sidebar" class="fixed top-0 left-0 h-full w-60 bg-blue-900 text-white z-50 flex flex-col shadow-2xl" style="transform:translateX(-100%);transition:transform .25s ease">
+    <div class="flex items-center justify-between px-4 py-4 border-b border-blue-700/50">
+      <div class="flex items-center gap-2">
+        <svg class="w-7 h-7 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
+        <span class="font-bold text-sm">会計管理システム</span>
+      </div>
+      <button onclick="closeSidebar()" class="p-1.5 rounded hover:bg-blue-700 text-blue-300 hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="px-4 py-2 border-b border-blue-800/50">
+      <p id="sb-email" class="text-xs text-blue-300 truncate"></p>
+    </div>
+    <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      <a href="index.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        ダッシュボード
+      </a>
+      <a href="petty-cash.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+        小口精算
+      </a>
+      <a href="payments.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        会計項目別支払
+      </a>
+      <a href="master.html" class="sidebar-link">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        マスタ管理
+      </a>
+    </nav>
+    <div class="p-3 border-t border-blue-800/50">
+      <button onclick="logout()" class="w-full py-2 px-3 rounded-lg bg-blue-800/60 hover:bg-red-700 text-sm font-medium transition-colors text-left flex items-center gap-2 text-blue-100">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        ログアウト
+      </button>
+    </div>
+  </aside>
+
+  <header class="bg-blue-700 text-white shadow-lg z-30 relative">
+    <div class="px-4 py-3 flex items-center gap-3">
+      <button onclick="openSidebar()" class="p-2 rounded-md hover:bg-blue-600 focus:outline-none flex-shrink-0" aria-label="メニュー">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <svg class="w-7 h-7 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
+      <span class="text-xl font-bold">会計管理システム</span>
+      <span id="user-email" class="ml-auto text-blue-200 text-xs hidden sm:block"></span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">小口精算 <span class="text-base font-normal text-gray-500 hidden sm:inline">備品購入等 明細書</span></h1>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="openMultiModal()" class="btn-secondary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          まとめてアップロード
+        </button>
+        <button onclick="openModal()" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新規入力
+        </button>
+      </div>
+    </div>
+
+    <!-- フィルター -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
+        <div>
+          <label class="form-label">事業所</label>
+          <select id="f-store" class="form-input" onchange="loadList()">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">勘定科目</label>
+          <select id="f-account" class="form-input" onchange="loadList()">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">日付 From</label>
+          <input type="date" id="f-from" class="form-input" onchange="loadList()">
+        </div>
+        <div>
+          <label class="form-label">日付 To</label>
+          <input type="date" id="f-to" class="form-input" onchange="loadList()">
+        </div>
+        <div>
+          <label class="form-label">検索</label>
+          <input type="text" id="f-q" class="form-input" placeholder="支払先・品名で検索..." oninput="loadList()">
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-3">
+        <p class="text-sm text-gray-500">表示件数: <span id="list-count" class="font-semibold text-gray-700">0</span> 件</p>
+        <button onclick="exportCsv()" class="btn-secondary flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          CSV出力
+        </button>
+      </div>
+    </div>
+
+    <!-- テーブル -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">No.</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">日付</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">事業所</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">購入者</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">支払先</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">品名</th>
+            <th class="px-3 py-3 text-left text-gray-600 whitespace-nowrap">勘定科目</th>
+            <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">金額（税抜）</th>
+            <th class="px-3 py-3 text-center text-gray-600 whitespace-nowrap">税率</th>
+            <th class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">合計</th>
+            <th class="px-3 py-3 text-center text-gray-600 whitespace-nowrap">レシート</th>
+            <th class="px-3 py-3 text-center text-gray-600 whitespace-nowrap">操作</th>
+          </tr>
+        </thead>
+        <tbody id="list-body">
+          <tr><td colspan="12" class="text-center py-10 text-gray-400">読み込み中...</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-gray-300 bg-gray-50">
+            <td colspan="7" class="px-3 py-3 text-sm font-semibold text-gray-600">合計</td>
+            <td class="px-3 py-3 text-right font-semibold text-gray-800" id="sum-amount">¥0</td>
+            <td></td>
+            <td class="px-3 py-3 text-right font-semibold text-gray-800" id="sum-total">¥0</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </main>
+
+  <!-- レシートプレビューモーダル -->
+  <div id="receipt-modal" class="modal-backdrop hidden" style="z-index:60;align-items:flex-start;padding-top:1rem" onclick="if(event.target===this)closeReceiptModal()">
+    <div class="bg-white rounded-xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:96vh">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-200 flex-shrink-0">
+        <div>
+          <p class="font-semibold text-gray-800 text-sm" id="receipt-modal-payee"></p>
+          <p class="text-xs text-gray-400" id="receipt-modal-date"></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="receipt-modal-link" href="#" target="_blank" class="btn-secondary text-xs px-3 py-1.5">別タブで開く ↗</a>
+          <button onclick="closeReceiptModal()" class="text-gray-400 hover:text-gray-600 ml-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="overflow-y-auto flex-1 p-4 flex items-center justify-center bg-gray-50">
+        <img id="receipt-modal-img" src="" alt="レシート" class="max-w-full max-h-full object-contain rounded-lg shadow" style="max-height:75vh">
+      </div>
+    </div>
+  </div>
+
+  <!-- 入力モーダル -->
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800" id="modal-title">小口精算 新規入力</h2>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <!-- レシートアップロード -->
+        <div class="mb-5">
+          <label class="form-label mb-2">レシート写真（AIが自動解析）</label>
+          <div id="drop-zone" class="drop-zone" onclick="document.getElementById('receipt-file').click()" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+            <svg class="w-10 h-10 text-indigo-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <p class="text-sm text-indigo-600 font-medium">クリックまたはドラッグ＆ドロップ</p>
+            <p class="text-xs text-gray-400 mt-1">JPG, PNG, HEIC（iPhone）対応（最大20MB）— HEICはサーバーで自動変換</p>
+          </div>
+          <input type="file" id="receipt-file" accept="image/*,.heic,.heif" class="hidden" onchange="onFileSelect(event)">
+          <div id="receipt-preview-wrap" class="mt-3 hidden">
+            <img id="receipt-img" class="receipt-preview" src="" alt="レシートプレビュー">
+            <div id="ocr-status" class="mt-2 text-xs flex items-center gap-2"></div>
+          </div>
+        </div>
+
+        <form id="entry-form" onsubmit="submitForm(event)">
+          <input type="hidden" id="edit-id">
+          <input type="hidden" id="f-receipt-image">
+          <input type="hidden" id="f-receipt-drive-url">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="form-label">No.</label>
+              <input type="number" id="f-no" class="form-input" placeholder="自動">
+            </div>
+            <div>
+              <label class="form-label">日付 <span class="text-red-500">*</span></label>
+              <input type="date" id="f-date" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- 事業所コンボボックス -->
+            <div>
+              <label class="form-label">事業所</label>
+              <select id="f-store-sel" class="form-input" onchange="onComboSelChange('store')">
+                <option value="">選択してください</option>
+              </select>
+              <input type="text" id="f-store-form" class="form-input mt-2 hidden" placeholder="事業所名を直接入力" oninput="onComboInput('store')">
+              <button type="button" id="btn-add-store" class="hidden mt-1 text-xs text-blue-500 hover:text-blue-700" onclick="addToMaster('store')">＋ マスタに追加</button>
+            </div>
+            <!-- 購入者コンボボックス -->
+            <div>
+              <label class="form-label">購入者</label>
+              <select id="f-purchaser-sel" class="form-input" onchange="onComboSelChange('purchaser')">
+                <option value="">選択してください</option>
+              </select>
+              <input type="text" id="f-purchaser-form" class="form-input mt-2 hidden" placeholder="購入者名を直接入力" oninput="onComboInput('purchaser')">
+              <button type="button" id="btn-add-purchaser" class="hidden mt-1 text-xs text-blue-500 hover:text-blue-700" onclick="addToMaster('purchaser')">＋ マスタに追加</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- 支払先 -->
+            <div>
+              <label class="form-label">支払先（店名など）<span class="text-red-500">*</span></label>
+              <input type="text" id="f-payee" class="form-input" required placeholder="例：コンビニ、ホームセンター">
+            </div>
+            <div></div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">品名 <span class="text-red-500">*</span></label>
+            <input type="text" id="f-item-name" class="form-input" required placeholder="例：文房具、清掃用品">
+          </div>
+
+          <!-- 勘定科目コンボボックス -->
+          <div class="mb-4">
+            <label class="form-label">勘定科目</label>
+            <select id="f-account-sel" class="form-input" onchange="onComboSelChange('account_category')">
+              <option value="">選択してください</option>
+            </select>
+            <input type="text" id="f-account-category" class="form-input mt-2 hidden" placeholder="勘定科目を直接入力（例：消耗品費）" oninput="onComboInput('account_category')">
+            <button type="button" id="btn-add-account-category" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700" onclick="addToMaster('account_category')">＋ マスタに追加</button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="form-label">数量</label>
+              <input type="number" id="f-qty" class="form-input" min="0" step="0.01" value="1" oninput="calcAmounts()">
+            </div>
+            <div>
+              <label class="form-label">単価（税抜）</label>
+              <input type="number" id="f-unit-price" class="form-input" min="0" step="1" oninput="calcAmounts()">
+            </div>
+            <div>
+              <label class="form-label">金額（税抜）</label>
+              <input type="number" id="f-amount" class="form-input" min="0" step="1" oninput="calcTax()">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="form-label">税率</label>
+              <select id="f-tax-rate" class="form-input" onchange="calcTax()">
+                <option value="10%">10%（標準）</option>
+                <option value="8%">8%（軽減税率）</option>
+                <option value="0%">0%（非課税）</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">消費税額</label>
+              <input type="number" id="f-tax-amount" class="form-input" min="0" step="1">
+            </div>
+            <div>
+              <label class="form-label">合計金額（税込）</label>
+              <input type="number" id="f-total-amount" class="form-input bg-gray-50" readonly>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- 税区分コンボボックス -->
+            <div>
+              <label class="form-label">税区分</label>
+              <input type="text" id="f-tax-category" class="form-input" list="list-tax-category" placeholder="選択または入力">
+              <datalist id="list-tax-category"></datalist>
+              <button type="button" id="btn-add-tax-category" class="hidden mt-1 text-xs text-indigo-500 hover:text-indigo-700">＋ マスタに追加</button>
+            </div>
+            <div>
+              <label class="form-label">備考</label>
+              <input type="text" id="f-notes" class="form-input" placeholder="任意">
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button type="button" onclick="closeModal()" class="btn-secondary">キャンセル</button>
+            <button type="submit" class="btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= まとめてアップロード モーダル ========= -->
+  <div id="multi-modal" class="modal-backdrop hidden">
+    <div class="modal-box" style="max-width:860px">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800">まとめてアップロード（最大5枚）</h2>
+        <button onclick="closeMultiModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 1: ファイル選択 -->
+      <div id="multi-step-select" class="p-6">
+        <div class="drop-zone" onclick="document.getElementById('multi-file-input').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="event.preventDefault();this.classList.remove('drag-over');onMultiDrop(event)">
+          <svg class="w-12 h-12 text-indigo-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <p class="text-sm font-medium text-indigo-600">クリックまたはドラッグ＆ドロップ</p>
+          <p class="text-xs text-gray-400 mt-1">最大5枚 ／ JPG・PNG・HEIC対応 ／ 1枚ずつ順番にAI解析します</p>
+        </div>
+        <input type="file" id="multi-file-input" multiple accept="image/*,.heic,.heif" class="hidden" onchange="onMultiFileSelect(event)">
+        <div id="multi-thumb-grid" class="hidden mt-4 grid grid-cols-3 sm:grid-cols-5 gap-3"></div>
+        <div class="flex items-center justify-between mt-5">
+          <p id="multi-select-count" class="text-sm text-gray-500"></p>
+          <div class="flex gap-2">
+            <button onclick="closeMultiModal()" class="btn-secondary">キャンセル</button>
+            <button id="multi-ocr-btn" onclick="startMultiOcr()" class="btn-primary hidden">AI解析スタート →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: 解析中 -->
+      <div id="multi-step-processing" class="p-6 hidden">
+        <p class="text-sm text-gray-500 mb-4">レシートを1枚ずつAI解析しています...</p>
+        <div id="multi-prog-list" class="space-y-3"></div>
+      </div>
+
+      <!-- Step 3: 確認・編集・保存 -->
+      <div id="multi-step-review" class="hidden">
+        <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between gap-3 bg-gray-50">
+          <p class="text-sm text-gray-600 font-medium">内容を確認・修正してから保存してください</p>
+          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer whitespace-nowrap">
+            <input type="checkbox" id="multi-check-all" checked onchange="toggleAllMultiCheck(this.checked)" class="accent-indigo-600 w-4 h-4">
+            すべて選択
+          </label>
+        </div>
+        <div class="p-4 overflow-y-auto" style="max-height:55vh">
+          <div id="multi-review-list" class="space-y-4"></div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-sm text-gray-500">チェックした項目をまとめて保存します</p>
+          <div class="flex gap-2">
+            <button onclick="closeMultiModal()" class="btn-secondary">閉じる</button>
+            <button onclick="saveAllMulti()" id="multi-save-btn" class="btn-primary">まとめて保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let masterCache = {};
+
+    async function loadMaster(type) {
+      if (masterCache[type]) return masterCache[type];
+      const data = await fetch('/api/masters?type=' + type).then(r => r.json());
+      masterCache[type] = data.map(d => d.value);
+      return masterCache[type];
+    }
+
+    function fillDatalist(listId, values) {
+      const dl = document.getElementById(listId);
+      if (dl) dl.innerHTML = values.map(v => `<option value="${v.replace(/"/g,'&quot;')}">`).join('');
+    }
+
+    // ── セレクト+直接入力コンボ ──────────────────────────────────
+    const COMBOS = {
+      store:            { selId: 'f-store-sel',     inputId: 'f-store-form',       btnId: 'btn-add-store',            masterType: 'store' },
+      account_category: { selId: 'f-account-sel',   inputId: 'f-account-category', btnId: 'btn-add-account-category', masterType: 'account_category' },
+      purchaser:        { selId: 'f-purchaser-sel',  inputId: 'f-purchaser-form',   btnId: 'btn-add-purchaser',        masterType: 'purchaser' },
+    };
+
+    function fillSelect(selectId, values) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      sel.innerHTML =
+        '<option value="">選択してください</option>' +
+        values.map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('') +
+        '<option value="__custom__">✏️ 直接入力する...</option>';
+    }
+
+    function onComboSelChange(type) {
+      const { selId, inputId, btnId } = COMBOS[type];
+      const sel   = document.getElementById(selId);
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      if (sel.value === '__custom__') {
+        input.classList.remove('hidden');
+        input.value = '';
+        input.focus();
+        btn.classList.add('hidden');
+      } else {
+        input.classList.add('hidden');
+        btn.classList.add('hidden');
+      }
+    }
+
+    function onComboInput(type) {
+      const { inputId, btnId, masterType } = COMBOS[type];
+      const val  = document.getElementById(inputId).value.trim();
+      const opts = masterCache[masterType] || [];
+      const btn  = document.getElementById(btnId);
+      btn.classList.toggle('hidden', !val || opts.includes(val));
+      if (!btn.classList.contains('hidden')) btn.textContent = `＋「${val}」をマスタに追加`;
+    }
+
+    function getComboValue(type) {
+      const { selId, inputId } = COMBOS[type];
+      const sel = document.getElementById(selId);
+      if (sel && sel.value && sel.value !== '__custom__') return sel.value;
+      return document.getElementById(inputId).value.trim();
+    }
+
+    function setComboValue(type, value) {
+      const { selId, inputId, btnId } = COMBOS[type];
+      const sel   = document.getElementById(selId);
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      btn.classList.add('hidden');
+      if (!value) { sel.value = ''; input.classList.add('hidden'); return; }
+      const exists = Array.from(sel.options).some(o => o.value === value);
+      if (exists) {
+        sel.value = value;
+        input.classList.add('hidden');
+      } else {
+        sel.value = '__custom__';
+        input.classList.remove('hidden');
+        input.value = value;
+      }
+    }
+
+    async function addToMaster(type) {
+      const { selId, inputId, btnId, masterType } = COMBOS[type];
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) return;
+      await fetch('/api/masters', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: masterType, value: val }),
+      });
+      delete masterCache[masterType];
+      const values = await loadMaster(masterType);
+      fillSelect(selId, values);
+      // 追加した値をセレクトで選択状態に
+      document.getElementById(selId).value = val;
+      document.getElementById(inputId).classList.add('hidden');
+      document.getElementById(btnId).classList.add('hidden');
+      showToast(`「${val}」をマスタに追加しました`, 'success');
+    }
+
+    function initCombobox(inputId, listId, btnId, masterType) {
+      const input = document.getElementById(inputId);
+      const btn   = document.getElementById(btnId);
+      if (!input || !btn) return;
+      input.addEventListener('input', () => {
+        const val = input.value.trim();
+        const opts = masterCache[masterType] || [];
+        btn.classList.toggle('hidden', !val || opts.includes(val));
+        if (!btn.classList.contains('hidden')) btn.textContent = `＋「${val}」をマスタに追加`;
+      });
+      btn.addEventListener('click', async () => {
+        const val = input.value.trim();
+        if (!val) return;
+        await fetch('/api/masters', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ type: masterType, value: val })
+        });
+        delete masterCache[masterType];
+        const values = await loadMaster(masterType);
+        fillDatalist(listId, values);
+        btn.classList.add('hidden');
+        showToast(`「${val}」をマスタに追加しました`, 'success');
+      });
+    }
+
+    async function initMasters() {
+      const [stores, accounts, taxCats, purchasers] = await Promise.all([
+        loadMaster('store'), loadMaster('account_category'), loadMaster('tax_category'), loadMaster('purchaser')
+      ]);
+      fillSelect('f-store-sel', stores);
+      fillSelect('f-account-sel', accounts);
+      fillSelect('f-purchaser-sel', purchasers);
+      fillDatalist('list-tax-category', taxCats);
+
+      // フィルター用セレクトボックス
+      const storeFilter = document.getElementById('f-store');
+      stores.forEach(s => storeFilter.innerHTML += `<option>${s}</option>`);
+      const accountFilter = document.getElementById('f-account');
+      accounts.forEach(a => accountFilter.innerHTML += `<option>${a}</option>`);
+
+      initCombobox('f-tax-category', 'list-tax-category', 'btn-add-tax-category', 'tax_category');
+    }
+
+    async function loadList() {
+      const store   = document.getElementById('f-store').value;
+      const account = document.getElementById('f-account').value;
+      const from    = document.getElementById('f-from').value;
+      const to      = document.getElementById('f-to').value;
+      const q       = document.getElementById('f-q').value;
+      const params  = new URLSearchParams();
+      if (store)   params.set('store', store);
+      if (account) params.set('account_category', account);
+      if (from)    params.set('from', from);
+      if (to)      params.set('to', to);
+      if (q)       params.set('q', q);
+      try {
+        const data = await fetch('/api/petty-cash?' + params).then(r => r.json());
+        renderList(data);
+      } catch(e) { showToast('読み込みエラー', 'error'); }
+    }
+
+    function renderList(data) {
+      const tbody = document.getElementById('list-body');
+      document.getElementById('list-count').textContent = data.length;
+      let sumAmt = 0, sumTotal = 0;
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-10 text-gray-400">データがありません</td></tr>';
+        document.getElementById('sum-amount').textContent = '¥0';
+        document.getElementById('sum-total').textContent = '¥0';
+        return;
+      }
+      tbody.innerHTML = data.map(r => {
+        sumAmt   += r.amount || 0;
+        sumTotal += r.total_amount || 0;
+        return `<tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <td class="px-3 py-2.5 text-gray-500">${r.no ?? '-'}</td>
+          <td class="px-3 py-2.5 text-gray-700 whitespace-nowrap">${r.date ?? '-'}</td>
+          <td class="px-3 py-2.5"><span class="tag tag-blue">${r.store ?? '-'}</span></td>
+          <td class="px-3 py-2.5 text-gray-700 whitespace-nowrap">${r.purchaser ?? '-'}</td>
+          <td class="px-3 py-2.5 text-gray-700 max-w-[130px] truncate">${r.payee ?? '-'}</td>
+          <td class="px-3 py-2.5 text-gray-700 max-w-[130px] truncate">${r.item_name ?? '-'}</td>
+          <td class="px-3 py-2.5"><span class="tag tag-green">${r.account_category ?? '-'}</span></td>
+          <td class="px-3 py-2.5 text-right text-gray-700">${r.amount != null ? '¥' + Math.round(r.amount).toLocaleString() : '-'}</td>
+          <td class="px-3 py-2.5 text-center"><span class="tag tag-gray">${r.tax_rate ?? '-'}</span></td>
+          <td class="px-3 py-2.5 text-right font-medium text-gray-800">${r.total_amount != null ? '¥' + Math.round(r.total_amount).toLocaleString() : '-'}</td>
+          <td class="px-3 py-2.5 text-center">
+            ${r.receipt_image ? `<button onclick="showReceiptModal('${(r.receipt_drive_url || r.receipt_image).replace(/'/g,"\\'")}','${(r.payee||'').replace(/'/g,"\\'")}','${r.date||''}')" class="btn-edit px-2 py-1 text-xs">表示</button>` : '<span class="text-gray-300 text-xs">なし</span>'}
+          </td>
+          <td class="px-3 py-2.5 text-center">
+            <div class="flex gap-1 justify-center">
+              <button onclick="editRow('${r._id}')" class="btn-edit">編集</button>
+              <button onclick="deleteRow('${r._id}')" class="btn-danger">削除</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+      document.getElementById('sum-amount').textContent = '¥' + Math.round(sumAmt).toLocaleString();
+      document.getElementById('sum-total').textContent  = '¥' + Math.round(sumTotal).toLocaleString();
+    }
+
+    function openModal() {
+      document.getElementById('modal-title').textContent = '小口精算 新規入力';
+      document.getElementById('entry-form').reset();
+      document.getElementById('edit-id').value = '';
+      document.getElementById('f-receipt-image').value = '';
+      document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+      document.getElementById('f-qty').value = 1;
+      document.getElementById('receipt-preview-wrap').classList.add('hidden');
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      setComboValue('store', '');
+      setComboValue('account_category', '');
+      document.getElementById('modal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+    async function editRow(id) {
+      document.getElementById('modal-title').textContent = '小口精算 編集';
+      const r = await fetch('/api/petty-cash/' + id).then(res => res.json());
+      document.getElementById('edit-id').value = r._id;
+      document.getElementById('f-no').value = r.no ?? '';
+      document.getElementById('f-date').value = r.date ?? '';
+      setComboValue('store', r.store ?? '');
+      setComboValue('purchaser', r.purchaser ?? '');
+      document.getElementById('f-payee').value = r.payee ?? '';
+      document.getElementById('f-item-name').value = r.item_name ?? '';
+      setComboValue('account_category', r.account_category ?? '');
+      document.getElementById('f-qty').value = r.quantity ?? 1;
+      document.getElementById('f-unit-price').value = r.unit_price ?? '';
+      document.getElementById('f-amount').value = r.amount ?? '';
+      document.getElementById('f-tax-rate').value = r.tax_rate ?? '10%';
+      document.getElementById('f-tax-amount').value = r.tax_amount ?? '';
+      document.getElementById('f-total-amount').value = r.total_amount ?? '';
+      document.getElementById('f-tax-category').value = r.tax_category ?? '';
+      document.getElementById('f-notes').value = r.notes ?? '';
+      document.getElementById('f-receipt-image').value = r.receipt_image ?? '';
+      document.querySelectorAll('[id^=btn-add-]').forEach(b => b.classList.add('hidden'));
+      if (r.receipt_image) {
+        document.getElementById('receipt-img').src = r.receipt_image;
+        document.getElementById('ocr-status').innerHTML = '';
+        document.getElementById('receipt-preview-wrap').classList.remove('hidden');
+      } else {
+        document.getElementById('receipt-preview-wrap').classList.add('hidden');
+      }
+      document.getElementById('modal').classList.remove('hidden');
+    }
+
+    async function deleteRow(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      await fetch('/api/petty-cash/' + id, { method: 'DELETE' });
+      showToast('削除しました', 'success');
+      loadList();
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const payload = {
+        no: document.getElementById('f-no').value || null,
+        date: document.getElementById('f-date').value,
+        store: getComboValue('store'),
+        purchaser: getComboValue('purchaser'),
+        payee: document.getElementById('f-payee').value,
+        item_name: document.getElementById('f-item-name').value,
+        account_category: getComboValue('account_category'),
+        quantity: parseFloat(document.getElementById('f-qty').value) || null,
+        unit_price: parseFloat(document.getElementById('f-unit-price').value) || null,
+        amount: parseFloat(document.getElementById('f-amount').value) || null,
+        tax_rate: document.getElementById('f-tax-rate').value,
+        tax_amount: parseFloat(document.getElementById('f-tax-amount').value) || null,
+        total_amount: parseFloat(document.getElementById('f-total-amount').value) || null,
+        tax_category: document.getElementById('f-tax-category').value,
+        notes: document.getElementById('f-notes').value,
+        receipt_image: document.getElementById('f-receipt-image').value,
+        receipt_drive_url: document.getElementById('f-receipt-drive-url').value,
+      };
+      const method = id ? 'PUT' : 'POST';
+      const url    = id ? '/api/petty-cash/' + id : '/api/petty-cash';
+      await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      showToast(id ? '更新しました' : '保存しました', 'success');
+      closeModal();
+      loadList();
+    }
+
+    function calcAmounts() {
+      const qty  = parseFloat(document.getElementById('f-qty').value) || 0;
+      const unit = parseFloat(document.getElementById('f-unit-price').value) || 0;
+      if (qty > 0 && unit > 0) { document.getElementById('f-amount').value = Math.round(qty * unit); calcTax(); }
+    }
+    function calcTax() {
+      const amt = parseFloat(document.getElementById('f-amount').value) || 0;
+      const rate = document.getElementById('f-tax-rate').value;
+      const pct = rate === '10%' ? 0.1 : rate === '8%' ? 0.08 : 0;
+      const tax = Math.round(amt * pct);
+      document.getElementById('f-tax-amount').value = tax;
+      document.getElementById('f-total-amount').value = amt + tax;
+    }
+
+    function setOcrStatus(html) {
+      const el = document.getElementById('ocr-status');
+      el.innerHTML = html;
+      el.classList.remove('hidden');
+    }
+
+    function onDragOver(e)  { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+    function onDragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
+    function onDrop(e)      { e.preventDefault(); onDragLeave(); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }
+    function onFileSelect(e){ if (e.target.files[0]) handleFile(e.target.files[0]); }
+
+    async function handleFile(file) {
+      const isHeic = /\.(heic|heif)$/i.test(file.name) || file.type === 'image/heic' || file.type === 'image/heif';
+      document.getElementById('receipt-preview-wrap').classList.remove('hidden');
+      if (isHeic) {
+        document.getElementById('receipt-img').src = '';
+        setOcrStatus('<span class="spinner"></span> HEICをサーバーで変換・解析中...');
+      } else {
+        document.getElementById('receipt-img').src = URL.createObjectURL(file);
+        setOcrStatus('<span class="spinner"></span> AI解析中...');
+      }
+      const formData = new FormData();
+      formData.append('receipt', file);
+      try {
+        const res  = await fetch('/api/ocr', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.receipt_image) {
+          document.getElementById('receipt-img').src = data.receipt_image;
+          document.getElementById('f-receipt-image').value = data.receipt_image;
+          if (data.receipt_drive_url) document.getElementById('f-receipt-drive-url').value = data.receipt_drive_url;
+        }
+        if (data.error) { setOcrStatus(`<span class="text-red-500">OCRエラー: ${data.error}</span>`); return; }
+
+        if (data.date)               document.getElementById('f-date').value = data.date;
+        if (data.payee)              document.getElementById('f-payee').value = data.payee;
+        if (data.item_name)          document.getElementById('f-item-name').value = data.item_name;
+        if (data.account_category)   setComboValue('account_category', data.account_category);
+        if (data.amount != null)     document.getElementById('f-amount').value = data.amount;
+        if (data.tax_rate)           document.getElementById('f-tax-rate').value = data.tax_rate;
+        if (data.tax_amount != null) document.getElementById('f-tax-amount').value = data.tax_amount;
+        if (data.total_amount != null) document.getElementById('f-total-amount').value = data.total_amount;
+        if (data.tax_category)       document.getElementById('f-tax-category').value = data.tax_category;
+        // レシートに税抜金額と消費税額が両方明記されている場合のみ再計算
+        if (data.amount != null && data.tax_amount != null) calcTax();
+
+        const filled = [data.payee, data.item_name, data.date, data.total_amount].filter(v => v != null).length;
+        if (filled >= 2) {
+          setOcrStatus('<svg class="w-4 h-4 text-green-500 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-green-600">AI解析完了 — 内容を確認・修正してください</span>');
+        } else {
+          setOcrStatus('<span class="text-yellow-600">⚠ 一部の項目を読み取れませんでした。手動で補完してください。</span>');
+        }
+      } catch(_) { setOcrStatus('<span class="text-red-500">通信エラー。手動で入力してください。</span>'); }
+    }
+
+    function exportCsv() {
+      const store   = document.getElementById('f-store').value;
+      const from    = document.getElementById('f-from').value;
+      const to      = document.getElementById('f-to').value;
+      const params  = new URLSearchParams();
+      if (store) params.set('store', store);
+      if (from)  params.set('from', from);
+      if (to)    params.set('to', to);
+      window.location.href = '/api/petty-cash/export/csv?' + params;
+    }
+
+    function showToast(msg, type = '') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2800);
+    }
+
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal')) closeModal();
+    });
+    document.getElementById('multi-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('multi-modal')) closeMultiModal();
+    });
+
+    // ── まとめてアップロード ────────────────────────────────────
+    let multiFiles = [];
+    let multiResults = [];
+
+    function openMultiModal() {
+      multiFiles = []; multiResults = [];
+      document.getElementById('multi-thumb-grid').innerHTML = '';
+      document.getElementById('multi-thumb-grid').classList.add('hidden');
+      document.getElementById('multi-select-count').textContent = '';
+      document.getElementById('multi-ocr-btn').classList.add('hidden');
+      document.getElementById('multi-file-input').value = '';
+      showMultiStep('select');
+      document.getElementById('multi-modal').classList.remove('hidden');
+    }
+    function closeMultiModal() { document.getElementById('multi-modal').classList.add('hidden'); }
+    function showMultiStep(step) {
+      ['select','processing','review'].forEach(s => {
+        document.getElementById('multi-step-' + s).classList.toggle('hidden', s !== step);
+      });
+    }
+
+    function onMultiFileSelect(e) { setMultiFiles(Array.from(e.target.files)); }
+    function onMultiDrop(e) {
+      setMultiFiles(Array.from(e.dataTransfer.files)
+        .filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name)));
+    }
+    function setMultiFiles(files) {
+      multiFiles = files.slice(0, 5);
+      const grid = document.getElementById('multi-thumb-grid');
+      if (multiFiles.length === 0) {
+        grid.classList.add('hidden');
+        document.getElementById('multi-select-count').textContent = '';
+        document.getElementById('multi-ocr-btn').classList.add('hidden');
+        return;
+      }
+      grid.innerHTML = multiFiles.map((f, i) => {
+        const isHeic = /\.(heic|heif)$/i.test(f.name) || f.type === 'image/heic';
+        return `<div class="relative">
+          ${isHeic
+            ? `<div class="w-full aspect-square bg-gray-100 rounded-lg border flex flex-col items-center justify-center text-xs text-gray-400 p-1"><span class="font-bold">HEIC</span><span class="mt-1 truncate w-full text-center">${f.name}</span></div>`
+            : `<img src="${URL.createObjectURL(f)}" class="w-full aspect-square object-cover rounded-lg border">`}
+          <span class="absolute top-1 left-1 bg-indigo-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center leading-none">${i + 1}</span>
+        </div>`;
+      }).join('');
+      grid.classList.remove('hidden');
+      document.getElementById('multi-select-count').textContent =
+        `${multiFiles.length}枚選択中${multiFiles.length === 5 ? '（上限）' : ''}`;
+      document.getElementById('multi-ocr-btn').classList.remove('hidden');
+    }
+
+    async function startMultiOcr() {
+      if (multiFiles.length === 0) return;
+      showMultiStep('processing');
+      multiResults = [];
+      // 進捗リスト描画
+      document.getElementById('multi-prog-list').innerHTML = multiFiles.map((f, i) => {
+        const isHeic = /\.(heic|heif)$/i.test(f.name) || f.type === 'image/heic';
+        return `<div id="mprog-${i}" class="flex items-center gap-3 p-3 border rounded-lg bg-gray-50">
+          <div class="w-12 h-12 flex-shrink-0 rounded-lg border overflow-hidden bg-gray-200 flex items-center justify-center">
+            ${isHeic ? `<span class="text-xs text-gray-400">HEIC</span>` : `<img src="${URL.createObjectURL(f)}" class="w-full h-full object-cover">`}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-700 truncate">${f.name}</p>
+            <p id="mprog-st-${i}" class="text-xs text-gray-400">待機中...</p>
+          </div>
+          <div id="mprog-ic-${i}" class="flex-shrink-0"></div>
+        </div>`;
+      }).join('');
+      // 1枚ずつ順番に処理
+      for (let i = 0; i < multiFiles.length; i++) {
+        document.getElementById(`mprog-st-${i}`).textContent = 'AI解析中...';
+        document.getElementById(`mprog-ic-${i}`).innerHTML =
+          '<span class="spinner" style="border-color:rgba(79,70,229,0.2);border-top-color:#4f46e5"></span>';
+        try {
+          const fd = new FormData();
+          fd.append('receipt', multiFiles[i]);
+          const res  = await fetch('/api/ocr', { method: 'POST', body: fd });
+          const data = await res.json();
+          multiResults.push({ idx: i, file: multiFiles[i], data });
+          if (data.error) {
+            document.getElementById(`mprog-st-${i}`).textContent = `エラー: ${data.error}`;
+            document.getElementById(`mprog-st-${i}`).className = 'text-xs text-red-500';
+            document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+          } else {
+            document.getElementById(`mprog-st-${i}`).textContent = '解析完了';
+            document.getElementById(`mprog-st-${i}`).className = 'text-xs text-green-600';
+            document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+          }
+        } catch(_) {
+          multiResults.push({ idx: i, file: multiFiles[i], data: { error: '通信エラー' } });
+          document.getElementById(`mprog-st-${i}`).textContent = '通信エラー';
+          document.getElementById(`mprog-st-${i}`).className = 'text-xs text-red-500';
+          document.getElementById(`mprog-ic-${i}`).innerHTML = '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+        }
+      }
+      showMultiStep('review');
+      renderMultiReview();
+    }
+
+    function renderMultiReview() {
+      const stores   = (masterCache['store']            || []).map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+      const accounts = (masterCache['account_category'] || []).map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+      document.getElementById('multi-review-list').innerHTML = multiResults.map(r => {
+        const { idx, file, data } = r;
+        const hasErr = !!data.error;
+        const img    = data.receipt_image || '';
+        return `<div class="border rounded-xl overflow-hidden ${hasErr ? 'border-red-200' : 'border-gray-200'}">
+          <div class="flex items-center gap-3 px-4 py-2 ${hasErr ? 'bg-red-50' : 'bg-gray-50'} border-b flex-wrap">
+            <input type="checkbox" id="mc-chk-${idx}" ${hasErr ? '' : 'checked'} class="w-4 h-4 accent-indigo-600 flex-shrink-0">
+            <span class="font-semibold text-sm text-gray-700">レシート ${idx + 1}</span>
+            <span class="text-xs text-gray-400 truncate">${file.name}</span>
+            <span class="tag ${hasErr ? 'tag-red' : 'tag-green'} ml-auto flex-shrink-0">${hasErr ? 'エラー' : '解析完了'}</span>
+          </div>
+          ${hasErr ? `<p class="p-4 text-sm text-red-600">${data.error}</p>` : `
+          <div class="p-4 flex gap-4 flex-wrap sm:flex-nowrap">
+            <div class="flex-shrink-0">
+              ${img ? `<img src="${img}" class="w-20 h-20 object-cover rounded-lg border">` : `<div class="w-20 h-20 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-400">画像なし</div>`}
+            </div>
+            <div class="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div><label class="form-label">日付</label>
+                <input type="date" id="mc-date-${idx}" class="form-input" value="${data.date || ''}"></div>
+              <div><label class="form-label">支払先</label>
+                <input type="text" id="mc-payee-${idx}" class="form-input" value="${(data.payee || '').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"></div>
+              <div><label class="form-label">品名</label>
+                <input type="text" id="mc-item-${idx}" class="form-input" value="${(data.item_name || '').replace(/"/g,'&quot;').replace(/</g,'&lt;')}"></div>
+              <div><label class="form-label">事業所</label>
+                <select id="mc-store-sel-${idx}" class="form-input" onchange="onMultiCombo(${idx},'store')">
+                  <option value="">選択してください</option>${stores}
+                  <option value="__custom__">✏️ 直接入力する...</option>
+                </select>
+                <input type="text" id="mc-store-txt-${idx}" class="form-input mt-1 hidden" placeholder="直接入力">
+              </div>
+              <div><label class="form-label">勘定科目</label>
+                <select id="mc-acct-sel-${idx}" class="form-input" onchange="onMultiCombo(${idx},'acct')">
+                  <option value="">選択してください</option>${accounts}
+                  <option value="__custom__">✏️ 直接入力する...</option>
+                </select>
+                <input type="text" id="mc-acct-txt-${idx}" class="form-input mt-1 hidden" placeholder="直接入力">
+              </div>
+              <div><label class="form-label">合計金額（税込）</label>
+                <input type="number" id="mc-total-${idx}" class="form-input" value="${data.total_amount != null ? data.total_amount : ''}"></div>
+            </div>
+          </div>`}
+        </div>`;
+      }).join('');
+      // コンボ初期値セット
+      multiResults.forEach(r => {
+        if (!r.data.error) {
+          setMultiCombo(r.idx, 'store', r.data.store || '');
+          setMultiCombo(r.idx, 'acct',  r.data.account_category || '');
+        }
+      });
+    }
+
+    function onMultiCombo(idx, type) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      const txt = document.getElementById(`mc-${type}-txt-${idx}`);
+      if (!sel || !txt) return;
+      if (sel.value === '__custom__') { txt.classList.remove('hidden'); txt.focus(); }
+      else txt.classList.add('hidden');
+    }
+    function setMultiCombo(idx, type, value) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      const txt = document.getElementById(`mc-${type}-txt-${idx}`);
+      if (!sel) return;
+      if (!value) { sel.value = ''; if (txt) txt.classList.add('hidden'); return; }
+      if (Array.from(sel.options).some(o => o.value === value)) {
+        sel.value = value; if (txt) txt.classList.add('hidden');
+      } else {
+        sel.value = '__custom__'; if (txt) { txt.classList.remove('hidden'); txt.value = value; }
+      }
+    }
+    function getMultiCombo(idx, type) {
+      const sel = document.getElementById(`mc-${type}-sel-${idx}`);
+      if (sel && sel.value && sel.value !== '__custom__') return sel.value;
+      return (document.getElementById(`mc-${type}-txt-${idx}`)?.value || '').trim();
+    }
+
+    function toggleAllMultiCheck(checked) {
+      multiResults.forEach(r => {
+        const c = document.getElementById(`mc-chk-${r.idx}`);
+        if (c) c.checked = checked;
+      });
+    }
+
+    async function saveAllMulti() {
+      const toSave = multiResults.filter(r => {
+        const c = document.getElementById(`mc-chk-${r.idx}`);
+        return c && c.checked && !r.data.error;
+      });
+      if (toSave.length === 0) { showToast('保存する項目を選択してください', 'error'); return; }
+      const btn = document.getElementById('multi-save-btn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      let saved = 0, failed = 0;
+      for (const r of toSave) {
+        const i = r.idx;
+        const payload = {
+          date:              document.getElementById(`mc-date-${i}`)?.value || '',
+          store:             getMultiCombo(i, 'store'),
+          payee:             document.getElementById(`mc-payee-${i}`)?.value || '',
+          item_name:         document.getElementById(`mc-item-${i}`)?.value  || '',
+          account_category:  getMultiCombo(i, 'acct'),
+          total_amount:      parseFloat(document.getElementById(`mc-total-${i}`)?.value) || null,
+          receipt_image:     r.data.receipt_image    || '',
+          receipt_drive_url: r.data.receipt_drive_url || '',
+        };
+        try {
+          const res = await fetch('/api/petty-cash', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) saved++; else failed++;
+        } catch { failed++; }
+      }
+      btn.disabled = false; btn.textContent = 'まとめて保存';
+      if (saved  > 0) showToast(`${saved}件を保存しました`, 'success');
+      if (failed > 0) showToast(`${failed}件の保存に失敗しました`, 'error');
+      if (saved  > 0) { closeMultiModal(); loadList(); }
+    }
+
+    function showReceiptModal(url, payee, date) {
+      document.getElementById('receipt-modal-img').src = url;
+      document.getElementById('receipt-modal-link').href = url;
+      document.getElementById('receipt-modal-payee').textContent = payee || 'レシート';
+      document.getElementById('receipt-modal-date').textContent = date || '';
+      document.getElementById('receipt-modal').classList.remove('hidden');
+    }
+    function closeReceiptModal() {
+      document.getElementById('receipt-modal').classList.add('hidden');
+      document.getElementById('receipt-modal-img').src = '';
+    }
+
+    initMasters().then(() => loadList());
+  </script>
+  <script>
+  function openSidebar() {
+    document.getElementById('sidebar').style.transform = 'translateX(0)';
+    document.getElementById('sidebar-overlay').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').style.transform = 'translateX(-100%)';
+    document.getElementById('sidebar-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  (function() {
+    const page = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sidebar-link').forEach(a => {
+      if (a.getAttribute('href') === page) a.classList.add('active');
+    });
+    // URLクエリで事業所フィルター自動適用
+    const params = new URLSearchParams(location.search);
+    const store = params.get('store');
+    if (store) {
+      const el = document.getElementById('f-store');
+      if (el) { el.value = store; }
+    }
+  })();
+  (async function() {
+    try {
+      const res = await fetch('/api/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const { email } = await res.json();
+      ['user-email','sb-email'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = email;
+      });
+    } catch { window.location.href = '/login.html'; }
+  })();
+  async function logout() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+  }
+  </script>
+</body>
+</html>
