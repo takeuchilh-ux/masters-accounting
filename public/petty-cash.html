@@ -11,42 +11,20 @@
 <body class="bg-gray-50 min-h-screen pb-20 md:pb-0">
 
 <!-- サイドバー -->
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeSidebar()"></div>
-<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-blue-900 text-white z-50 flex flex-col shadow-2xl" style="transform:translateX(-100%);transition:transform .25s ease">
-  <div class="flex items-center justify-between px-4 py-4 border-b border-blue-700/50">
-    <div class="flex items-center gap-2">
-      <svg class="w-8 h-8 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
-      <div><p class="font-bold text-sm">マスターズスタッフ</p><p class="text-blue-300 text-xs">小口精算システム</p></div>
-    </div>
-    <button onclick="closeSidebar()" class="p-1.5 rounded hover:bg-blue-700 text-blue-300 hover:text-white">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-  </div>
-  <div class="px-4 py-2 border-b border-blue-800/50"><p id="sb-email" class="text-xs text-blue-300 truncate"></p></div>
-  <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
-    <a href="index.html" class="sidebar-link"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>ホーム</a>
-    <a href="petty-cash.html" class="sidebar-link active"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>小口精算</a>
-    <a href="master.html" class="sidebar-link"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>マスタ設定</a>
-  </nav>
-  <div class="p-3 border-t border-blue-800/50">
-    <button onclick="logout()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-blue-300 hover:bg-blue-800 hover:text-white text-sm transition-colors">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>ログアウト
-    </button>
-  </div>
-</aside>
-
-<!-- ヘッダー -->
 <header class="bg-blue-700 text-white shadow-md sticky top-0 z-30">
   <div class="flex items-center justify-between px-4 py-3">
-    <div class="flex items-center gap-3">
-      <button onclick="openSidebar()" class="p-1.5 rounded-lg hover:bg-blue-600 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
-      <svg class="w-7 h-7" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
-      <span class="font-bold">小口精算</span>
+    <div class="flex items-center gap-2">
+      <svg class="w-7 h-7 flex-shrink-0" viewBox="0 0 28 28"><rect width="28" height="28" rx="5" fill="white"/><text x="14" y="20" font-family="Arial,sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">MS</text></svg>
+      <span class="font-bold text-sm hidden sm:block">小口精算</span>
     </div>
-    <button onclick="openWizard()" class="hidden md:flex items-center gap-1.5 bg-white text-blue-700 font-bold text-sm px-4 py-1.5 rounded-full hover:bg-blue-50 transition-colors shadow">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>新規入力
+    <nav class="hidden md:flex items-center gap-1">
+      <a href="index.html" class="px-3 py-1.5 rounded-lg text-sm font-medium text-blue-100 hover:bg-blue-600 transition-colors">ホーム</a>
+      <a href="petty-cash.html" class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-blue-600 text-white">一覧</a>
+      <a href="master.html" class="px-3 py-1.5 rounded-lg text-sm font-medium text-blue-100 hover:bg-blue-600 transition-colors">設定</a>
+      <button onclick="logout()" class="ml-2 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-200 hover:bg-blue-600 hover:text-white transition-colors">ログアウト</button>
+    </nav>
+    <button onclick="openWizard()" class="flex md:hidden items-center gap-1 bg-white text-blue-700 font-bold text-xs px-3 py-1.5 rounded-full shadow">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>新規
     </button>
   </div>
 </header>
@@ -275,24 +253,22 @@
 <main class="max-w-6xl mx-auto px-4 py-5">
   <!-- フィルターバー -->
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-5">
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
-      <select id="fil-store" class="form-input" onchange="loadList()">
+    <div class="flex flex-wrap gap-2">
+      <select id="fil-store" class="form-input flex-1 min-w-36" onchange="loadList()">
         <option value="">すべての事業所</option>
       </select>
-      <select id="fil-account" class="form-input" onchange="loadList()">
+      <select id="fil-account" class="form-input flex-1 min-w-36" onchange="loadList()">
         <option value="">すべての勘定科目</option>
       </select>
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">開始日</label>
-          <input type="date" id="fil-from" class="form-input" onchange="loadList()">
-        </div>
-        <div>
-          <label class="text-xs text-gray-500 mb-1 block">終了日</label>
-          <input type="date" id="fil-to" class="form-input" onchange="loadList()">
-        </div>
+      <div class="flex items-center gap-1 flex-1 min-w-44 border border-gray-300 rounded-lg px-2 bg-white">
+        <span class="text-xs text-gray-400 whitespace-nowrap">開始</span>
+        <input type="date" id="fil-from" class="flex-1 text-sm py-2 outline-none min-w-0" onchange="loadList()">
       </div>
-      <input type="text" id="fil-q" class="form-input" placeholder="🔍 支払先・品名で検索" oninput="debounceLoad()">
+      <div class="flex items-center gap-1 flex-1 min-w-44 border border-gray-300 rounded-lg px-2 bg-white">
+        <span class="text-xs text-gray-400 whitespace-nowrap">終了</span>
+        <input type="date" id="fil-to" class="flex-1 text-sm py-2 outline-none min-w-0" onchange="loadList()">
+      </div>
+      <input type="text" id="fil-q" class="form-input flex-1 min-w-48" placeholder="🔍 支払先・品名で検索" oninput="debounceLoad()">
     </div>
     <div class="flex items-center justify-between mt-3">
       <span id="list-summary" class="text-sm text-gray-500"></span>
@@ -908,17 +884,7 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
-}
-
-function openSidebar() {
-  document.getElementById('sidebar').style.transform = 'translateX(0)';
-  document.getElementById('sidebar-overlay').classList.remove('hidden');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').style.transform = 'translateX(-100%)';
-  document.getElementById('sidebar-overlay').classList.add('hidden');
-}
-async function logout() {
+}async function logout() {
   await fetch('/api/logout', { method: 'POST' });
   location.href = '/login.html';
 }
@@ -928,7 +894,6 @@ async function init() {
     const r = await fetch('/api/me');
     if (!r.ok) { location.href = '/login.html'; return; }
     const d = await r.json();
-    document.getElementById('sb-email').textContent = d.email;
   } catch { location.href = '/login.html'; return; }
 
   await loadMasters();
