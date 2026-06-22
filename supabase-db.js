@@ -42,6 +42,8 @@ function applyQuery(sb, query) {
     if (val && typeof val === 'object' && !(val instanceof RegExp) && !Array.isArray(val)) {
       if (val.$gte !== undefined) sb = sb.gte(col, val.$gte);
       if (val.$lte !== undefined) sb = sb.lte(col, val.$lte);
+      if (val.$lt  !== undefined) sb = sb.lt(col, val.$lt);
+      if (val.$gt  !== undefined) sb = sb.gt(col, val.$gt);
       if (val.$in  !== undefined) sb = sb.in(col, val.$in);
     } else if (val instanceof RegExp) {
       sb = sb.ilike(col, `%${val.source}%`);
