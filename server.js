@@ -30,7 +30,7 @@ try {
   }
 } catch(_) {}
 
-const { pettyCash, masters, initSupabase } = require('./supabase-db');
+const { pettyCash, masters, users: usersDb, initSupabase } = require('./supabase-db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,11 +41,6 @@ function hashPassword(password) {
   return crypto.createHash('sha256').update(password + JWT_SECRET).digest('hex');
 }
 
-const USERS = [
-  { email: 'takeuchi.lh@gmail.com',         passwordHash: hashPassword('0000') },
-  { email: 'y.nakajima@master-staff.co.jp', passwordHash: hashPassword('1111') },
-];
-
 function requireAuth(req, res, next) {
   const token = req.cookies?.auth_token;
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -55,6 +50,11 @@ function requireAuth(req, res, next) {
   } catch {
     res.status(401).json({ error: 'Unauthorized' });
   }
+}
+
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== 'admin') return res.status(403).json({ error: '管理者権限が必要です' });
+  next();
 }
 
 const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
@@ -70,16 +70,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── 認証 ─────────────────────────────────────────────────────────
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-  const user = USERS.find(u => u.email === email && u.passwordHash === hashPassword(password));
-  if (!user) return res.status(401).json({ error: 'メールアドレスまたはパスワードが違います' });
-  const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-  res.cookie('auth_token', token, {
-    httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000,
-    sameSite: 'lax', secure: !!process.env.VERCEL,
-  });
-  res.json({ ok: true, email: user.email });
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await usersDb.findOne({ email });
+    if (!user || user.password_hash !== hashPassword(password)) {
+      return res.status(401).json({ error: 'メールアドレスまたはパスワードが違います' });
+    }
+    const token = jwt.sign({ email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.cookie('auth_token', token, {
+      httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: 'lax', secure: !!process.env.VERCEL,
+    });
+    res.json({ ok: true, email: user.email, role: user.role });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/logout', (req, res) => {
@@ -88,7 +92,48 @@ app.post('/api/logout', (req, res) => {
 });
 
 app.get('/api/me', requireAuth, (req, res) => {
-  res.json({ email: req.user.email });
+  res.json({ email: req.user.email, role: req.user.role });
+});
+
+// ── ユーザー管理（管理者のみ） ────────────────────────────────────
+app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const rows = await usersDb.find({}).sort({ created_at: 1 });
+    res.json(rows.map(u => ({ _id: u._id, email: u.email, name: u.name, role: u.role, created_at: u.created_at })));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { email, password, name, role } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'メールとパスワードは必須です' });
+    const exists = await usersDb.findOne({ email });
+    if (exists) return res.status(400).json({ error: 'このメールアドレスは既に登録されています' });
+    const inserted = await usersDb.insert({
+      email, name: name || '', role: role || 'user',
+      password_hash: hashPassword(password),
+    });
+    res.json({ id: inserted._id });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, role, password } = req.body;
+    const patch = { name, role };
+    if (password) patch.password_hash = hashPassword(password);
+    await usersDb.update({ _id: req.params.id }, { $set: patch });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const me = await usersDb.findOne({ email: req.user.email });
+    if (me?._id === req.params.id) return res.status(400).json({ error: '自分自身は削除できません' });
+    await usersDb.remove({ _id: req.params.id });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.use('/api', requireAuth);

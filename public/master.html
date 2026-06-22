@@ -27,36 +27,72 @@
 </header>
 
 <main class="max-w-2xl mx-auto px-4 py-6">
-  <!-- タブ -->
-  <div class="flex gap-1 flex-wrap mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
-    <button onclick="switchTab('store')"            id="tab-store"            class="tab-btn active">事業所</button>
-    <button onclick="switchTab('purchaser')"        id="tab-purchaser"        class="tab-btn">購入者</button>
-    <button onclick="switchTab('account_category')" id="tab-account_category" class="tab-btn">勘定科目</button>
-    <button onclick="switchTab('tax_category')"     id="tab-tax_category"     class="tab-btn">税区分</button>
-  </div>
 
-  <!-- 追加フォーム -->
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
-    <div class="flex gap-2">
-      <input type="text" id="new-value" class="form-input flex-1" placeholder="新しい項目を入力">
-      <button onclick="addItem()" class="btn-primary px-5 py-2 rounded-xl font-bold">追加</button>
+  <!-- マスタタブ群 -->
+  <div id="master-section">
+    <!-- タブ -->
+    <div id="tab-bar" class="flex gap-1 flex-wrap mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
+      <button onclick="switchTab('store')"            id="tab-store"            class="tab-btn active">事業所</button>
+      <button onclick="switchTab('purchaser')"        id="tab-purchaser"        class="tab-btn">購入者</button>
+      <button onclick="switchTab('account_category')" id="tab-account_category" class="tab-btn">勘定科目</button>
+      <button onclick="switchTab('tax_category')"     id="tab-tax_category"     class="tab-btn">税区分</button>
+      <!-- 管理者のみ表示 -->
+      <button onclick="switchTab('users')" id="tab-users" class="tab-btn hidden">ユーザー管理</button>
     </div>
-  </div>
 
-  <!-- 確認ダイアログ -->
-  <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
-      <p id="confirm-msg" class="text-gray-800 text-sm font-medium mb-5 text-center"></p>
-      <div class="flex gap-3">
-        <button id="confirm-cancel" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
-        <button id="confirm-ok" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600">削除</button>
+    <!-- マスタ追加フォーム（ユーザー管理タブ以外で表示） -->
+    <div id="master-add-form" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+      <div class="flex gap-2">
+        <input type="text" id="new-value" class="form-input flex-1" placeholder="新しい項目を入力">
+        <button onclick="addItem()" class="btn-primary px-5 py-2 rounded-xl font-bold">追加</button>
       </div>
     </div>
-  </div>
 
-  <!-- リスト -->
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div id="master-list" class="divide-y divide-gray-100"></div>
+    <!-- ユーザー追加フォーム（ユーザー管理タブのみ表示） -->
+    <div id="user-add-form" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+      <div class="grid grid-cols-1 gap-3">
+        <div class="flex gap-2">
+          <input type="text" id="new-user-name" class="form-input flex-1" placeholder="名前">
+          <select id="new-user-role" class="form-input w-32">
+            <option value="user">一般</option>
+            <option value="admin">管理者</option>
+          </select>
+        </div>
+        <input type="email" id="new-user-email" class="form-input" placeholder="メールアドレス">
+        <div class="flex gap-2">
+          <input type="password" id="new-user-password" class="form-input flex-1" placeholder="パスワード">
+          <button onclick="addUser()" class="btn-primary px-5 py-2 rounded-xl font-bold whitespace-nowrap">追加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 確認ダイアログ -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+        <p id="confirm-msg" class="text-gray-800 text-sm font-medium mb-5 text-center"></p>
+        <div class="flex gap-3">
+          <button id="confirm-cancel" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
+          <button id="confirm-ok" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600">削除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- パスワード変更モーダル -->
+    <div id="pw-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+        <h3 class="text-sm font-semibold text-gray-800 mb-4">パスワード変更</h3>
+        <input type="password" id="pw-new" class="form-input w-full mb-4" placeholder="新しいパスワード">
+        <div class="flex gap-3">
+          <button onclick="closePwModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
+          <button onclick="savePw()" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">変更</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- リスト -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div id="master-list" class="divide-y divide-gray-100"></div>
+    </div>
   </div>
 </main>
 
@@ -88,17 +124,27 @@
 
 <script>
 let currentType = 'store';
+let currentRole = 'user';
+let pwTargetId = null;
 const LABELS = { store:'事業所', purchaser:'購入者', account_category:'勘定科目', tax_category:'税区分' };
 
 function switchTab(type) {
   currentType = type;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab-${type}`).classList.add('active');
-  document.getElementById('new-value').placeholder = `新しい${LABELS[type]}を入力`;
+
+  const isUsers = type === 'users';
+  document.getElementById('master-add-form').classList.toggle('hidden', isUsers);
+  document.getElementById('user-add-form').classList.toggle('hidden', !isUsers);
+  if (!isUsers) {
+    document.getElementById('new-value').placeholder = `新しい${LABELS[type]}を入力`;
+  }
   loadList();
 }
 
+// ── マスタ操作 ─────────────────────────────────────────────────────
 async function loadList() {
+  if (currentType === 'users') { loadUsers(); return; }
   const r = await fetch(`/api/masters?type=${currentType}`);
   const rows = await r.json();
   const el = document.getElementById('master-list');
@@ -132,28 +178,26 @@ function startEdit(id) {
   document.getElementById(`edit-${id}`).classList.remove('hidden');
   document.getElementById(`edit-input-${id}`).focus();
 }
-
 function cancelEdit(id) {
   document.getElementById(`label-${id}`).classList.remove('hidden');
   document.getElementById(`btns-${id}`).classList.remove('hidden');
   document.getElementById(`edit-${id}`).classList.add('hidden');
 }
-
 async function saveEdit(id) {
   const val = document.getElementById(`edit-input-${id}`).value.trim();
   if (!val) return;
   await fetch(`/api/masters/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ value: val }) });
+  showToast('保存しました');
   loadList();
 }
-
 async function addItem() {
   const val = document.getElementById('new-value').value.trim();
   if (!val) return;
   await fetch('/api/masters', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type: currentType, value: val }) });
   document.getElementById('new-value').value = '';
+  showToast('追加しました');
   loadList();
 }
-
 async function deleteItem(id) {
   const row = document.getElementById(`row-${id}`);
   const val = row?.dataset.value || '';
@@ -164,9 +208,99 @@ async function deleteItem(id) {
   });
 }
 
-function showConfirm(msg, onOk) {
+// ── ユーザー管理 ──────────────────────────────────────────────────
+async function loadUsers() {
+  const r = await fetch('/api/users');
+  const rows = await r.json();
+  const el = document.getElementById('master-list');
+  if (rows.length === 0) {
+    el.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">ユーザーがいません</p>';
+    return;
+  }
+  el.innerHTML = rows.map(u => `
+    <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm ${u.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}">
+        ${(u.name || u.email)[0].toUpperCase()}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium text-gray-800 truncate">${u.name || '（名前未設定）'}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium ${u.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}">${u.role === 'admin' ? '管理者' : '一般'}</span>
+        </div>
+        <div class="text-xs text-gray-400 truncate">${u.email}</div>
+      </div>
+      <div class="flex gap-1 flex-shrink-0">
+        <button onclick="openPwModal('${u._id}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600" title="パスワード変更">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        </button>
+        <button onclick="toggleRole('${u._id}','${u.role}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-yellow-50 hover:text-yellow-600" title="権限切り替え">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        </button>
+        <button onclick="deleteUser('${u._id}','${(u.name||u.email).replace(/'/g,'')}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500" title="削除">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+async function addUser() {
+  const name  = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const pw    = document.getElementById('new-user-password').value;
+  const role  = document.getElementById('new-user-role').value;
+  if (!email || !pw) { showToast('メールとパスワードは必須です', 'error'); return; }
+  const r = await fetch('/api/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password: pw, role }) });
+  const d = await r.json();
+  if (!r.ok) { showToast(d.error || '追加に失敗しました', 'error'); return; }
+  document.getElementById('new-user-name').value = '';
+  document.getElementById('new-user-email').value = '';
+  document.getElementById('new-user-password').value = '';
+  showToast('ユーザーを追加しました');
+  loadUsers();
+}
+
+async function toggleRole(id, currentRole) {
+  const newRole = currentRole === 'admin' ? 'user' : 'admin';
+  const label = newRole === 'admin' ? '管理者' : '一般';
+  showConfirm(`権限を「${label}」に変更しますか？`, async () => {
+    await fetch(`/api/users/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ role: newRole }) });
+    showToast('権限を変更しました');
+    loadUsers();
+  }, '変更');
+}
+
+function openPwModal(id) {
+  pwTargetId = id;
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-modal').classList.remove('hidden');
+}
+function closePwModal() {
+  document.getElementById('pw-modal').classList.add('hidden');
+  pwTargetId = null;
+}
+async function savePw() {
+  const pw = document.getElementById('pw-new').value;
+  if (!pw) { showToast('パスワードを入力してください', 'error'); return; }
+  await fetch(`/api/users/${pwTargetId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw }) });
+  closePwModal();
+  showToast('パスワードを変更しました');
+}
+
+async function deleteUser(id, name) {
+  showConfirm(`「${name}」を削除しますか？`, async () => {
+    const r = await fetch(`/api/users/${id}`, { method:'DELETE' });
+    const d = await r.json();
+    if (!r.ok) { showToast(d.error || '削除に失敗しました', 'error'); return; }
+    showToast('削除しました');
+    loadUsers();
+  });
+}
+
+// ── 共通UI ───────────────────────────────────────────────────────
+function showConfirm(msg, onOk, okLabel = '削除') {
   const el = document.getElementById('confirm-modal');
   document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-ok').textContent = okLabel;
   document.getElementById('confirm-ok').onclick = () => { el.classList.add('hidden'); onOk(); };
   document.getElementById('confirm-cancel').onclick = () => el.classList.add('hidden');
   el.classList.remove('hidden');
@@ -178,7 +312,9 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
-}async function logout() {
+}
+
+async function logout() {
   await fetch('/api/logout', { method: 'POST' });
   location.href = '/login.html';
 }
@@ -188,6 +324,10 @@ async function init() {
     const r = await fetch('/api/me');
     if (!r.ok) { location.href = '/login.html'; return; }
     const d = await r.json();
+    currentRole = d.role;
+    if (d.role === 'admin') {
+      document.getElementById('tab-users').classList.remove('hidden');
+    }
   } catch { location.href = '/login.html'; return; }
   loadList();
 }
