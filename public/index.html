@@ -145,13 +145,20 @@ async function loadSummary() {
     document.getElementById('card-count').textContent = d.count.toLocaleString();
     document.getElementById('card-total').textContent = '¥' + (d.total || 0).toLocaleString();
 
-    const colors = [['blue-50','blue-100','blue-500','blue-700'],['indigo-50','indigo-100','indigo-500','indigo-700'],['violet-50','violet-100','violet-500','violet-700'],['purple-50','purple-100','purple-500','purple-700'],['fuchsia-50','fuchsia-100','fuchsia-500','fuchsia-700'],['pink-50','pink-100','pink-500','pink-700']];
+    const colors = [
+      {bg:'#eff6ff',border:'#bfdbfe',text:'#1d4ed8',bar:'#3b82f6'},
+      {bg:'#eef2ff',border:'#c7d2fe',text:'#4338ca',bar:'#6366f1'},
+      {bg:'#f5f3ff',border:'#ddd6fe',text:'#6d28d9',bar:'#8b5cf6'},
+      {bg:'#fdf4ff',border:'#f0abfc',text:'#86198f',bar:'#d946ef'},
+      {bg:'#fff1f2',border:'#fecdd3',text:'#be123c',bar:'#f43f5e'},
+      {bg:'#f0fdf4',border:'#bbf7d0',text:'#15803d',bar:'#22c55e'},
+    ];
     document.getElementById('store-cards').innerHTML = d.byStore.length ? d.byStore.map((s, i) => {
-      const [bg, border, bar, text] = colors[i % colors.length];
-      return `<div class="bg-${bg} border border-${border} rounded-2xl p-4 cursor-pointer hover:shadow-md transition-all" onclick="location.href='petty-cash.html?store=${encodeURIComponent(s.store)}'">
-        <p class="text-xs text-${text} font-medium truncate leading-tight">${s.store}</p>
-        <p class="text-2xl font-bold text-${text} mt-2">${s.count}<span class="text-sm font-normal">件</span></p>
-        <p class="text-xs text-${bar} mt-1">¥${(s.total||0).toLocaleString()}</p>
+      const c = colors[i % colors.length];
+      return `<div style="background:${c.bg};border:1px solid ${c.border}" class="rounded-2xl p-4 cursor-pointer hover:shadow-md transition-all" onclick="location.href='petty-cash.html?store=${encodeURIComponent(s.store)}'">
+        <p style="color:${c.text}" class="text-xs font-medium truncate leading-tight">${s.store}</p>
+        <p style="color:${c.text}" class="text-2xl font-bold mt-2">${s.count}<span class="text-sm font-normal">件</span></p>
+        <p style="color:${c.bar}" class="text-xs mt-1">¥${(s.total||0).toLocaleString()}</p>
       </div>`;
     }).join('') : '<p class="text-sm text-gray-400 col-span-full py-4 text-center">データがありません</p>';
 

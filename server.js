@@ -204,6 +204,11 @@ app.get('/api/petty-cash/:id', async (req, res) => {
 app.post('/api/petty-cash', async (req, res) => {
   try {
     const data = { ...req.body, created_at: new Date().toISOString() };
+    // 採番: YYYYMMDD-NNN（同日の連番）
+    const dateStr = (data.date || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+    const sameDate = await pettyCash.find({ date: data.date });
+    const seq = String(sameDate.length + 1).padStart(3, '0');
+    data.no = `${dateStr}-${seq}`;
     if (data.store && data.receipt_image) {
       const fileId = extractFileId(data.receipt_image);
       if (fileId) {
