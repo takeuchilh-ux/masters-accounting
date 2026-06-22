@@ -119,8 +119,15 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
 
 app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, role, password } = req.body;
-    const patch = { name, role };
+    const { name, email, role, password } = req.body;
+    if (email) {
+      const dup = await usersDb.findOne({ email });
+      if (dup && dup._id !== req.params.id) return res.status(400).json({ error: 'このメールアドレスは既に使用されています' });
+    }
+    const patch = {};
+    if (name  !== undefined) patch.name  = name;
+    if (email !== undefined) patch.email = email;
+    if (role  !== undefined) patch.role  = role;
     if (password) patch.password_hash = hashPassword(password);
     await usersDb.update({ _id: req.params.id }, { $set: patch });
     res.json({ ok: true });

@@ -77,14 +77,34 @@
       </div>
     </div>
 
-    <!-- パスワード変更モーダル -->
-    <div id="pw-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
+    <!-- ユーザー編集モーダル -->
+    <div id="user-edit-modal" class="fixed inset-0 bg-black/50 z-80 hidden flex items-center justify-center px-6">
       <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
-        <h3 class="text-sm font-semibold text-gray-800 mb-4">パスワード変更</h3>
-        <input type="password" id="pw-new" class="form-input w-full mb-4" placeholder="新しいパスワード">
+        <h3 class="text-sm font-semibold text-gray-800 mb-4">ユーザー編集</h3>
+        <div class="flex flex-col gap-3 mb-5">
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">名前</label>
+            <input type="text" id="edit-user-name" class="form-input w-full" placeholder="名前">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">メールアドレス</label>
+            <input type="email" id="edit-user-email" class="form-input w-full" placeholder="メールアドレス">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">権限</label>
+            <select id="edit-user-role" class="form-input w-full">
+              <option value="user">一般</option>
+              <option value="admin">管理者</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">新しいパスワード（変更する場合のみ）</label>
+            <input type="password" id="edit-user-password" class="form-input w-full" placeholder="変更しない場合は空欄">
+          </div>
+        </div>
         <div class="flex gap-3">
-          <button onclick="closePwModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
-          <button onclick="savePw()" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">変更</button>
+          <button onclick="closeUserEditModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">キャンセル</button>
+          <button onclick="saveUserEdit()" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700">保存</button>
         </div>
       </div>
     </div>
@@ -230,11 +250,8 @@ async function loadUsers() {
         <div class="text-xs text-gray-400 truncate">${u.email}</div>
       </div>
       <div class="flex gap-1 flex-shrink-0">
-        <button onclick="openPwModal('${u._id}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600" title="パスワード変更">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-        </button>
-        <button onclick="toggleRole('${u._id}','${u.role}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-yellow-50 hover:text-yellow-600" title="権限切り替え">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        <button onclick='openUserEditModal(${JSON.stringify(u).replace(/'/g,"&#39;")})' class="p-1.5 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-600" title="編集">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         </button>
         <button onclick="deleteUser('${u._id}','${(u.name||u.email).replace(/'/g,'')}')" class="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500" title="削除">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -259,31 +276,36 @@ async function addUser() {
   loadUsers();
 }
 
-async function toggleRole(id, currentRole) {
-  const newRole = currentRole === 'admin' ? 'user' : 'admin';
-  const label = newRole === 'admin' ? '管理者' : '一般';
-  showConfirm(`権限を「${label}」に変更しますか？`, async () => {
-    await fetch(`/api/users/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ role: newRole }) });
-    showToast('権限を変更しました');
-    loadUsers();
-  }, '変更');
+let editTargetId = null;
+
+function openUserEditModal(u) {
+  editTargetId = u._id;
+  document.getElementById('edit-user-name').value     = u.name  || '';
+  document.getElementById('edit-user-email').value    = u.email || '';
+  document.getElementById('edit-user-role').value     = u.role  || 'user';
+  document.getElementById('edit-user-password').value = '';
+  document.getElementById('user-edit-modal').classList.remove('hidden');
 }
 
-function openPwModal(id) {
-  pwTargetId = id;
-  document.getElementById('pw-new').value = '';
-  document.getElementById('pw-modal').classList.remove('hidden');
+function closeUserEditModal() {
+  document.getElementById('user-edit-modal').classList.add('hidden');
+  editTargetId = null;
 }
-function closePwModal() {
-  document.getElementById('pw-modal').classList.add('hidden');
-  pwTargetId = null;
-}
-async function savePw() {
-  const pw = document.getElementById('pw-new').value;
-  if (!pw) { showToast('パスワードを入力してください', 'error'); return; }
-  await fetch(`/api/users/${pwTargetId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw }) });
-  closePwModal();
-  showToast('パスワードを変更しました');
+
+async function saveUserEdit() {
+  const name     = document.getElementById('edit-user-name').value.trim();
+  const email    = document.getElementById('edit-user-email').value.trim();
+  const role     = document.getElementById('edit-user-role').value;
+  const password = document.getElementById('edit-user-password').value;
+  if (!email) { showToast('メールアドレスは必須です', 'error'); return; }
+  const body = { name, email, role };
+  if (password) body.password = password;
+  const r = await fetch(`/api/users/${editTargetId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) { showToast(d.error || '更新に失敗しました', 'error'); return; }
+  closeUserEditModal();
+  showToast('保存しました');
+  loadUsers();
 }
 
 async function deleteUser(id, name) {
