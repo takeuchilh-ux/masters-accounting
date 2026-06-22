@@ -593,8 +593,16 @@ function renderCardForm() {
   const total = wizardResults.length;
   document.getElementById('step3-counter').textContent = `${currentCardIdx + 1} / ${total} 枚`;
   document.getElementById('btn-prev-card').disabled = currentCardIdx === 0;
-  document.getElementById('btn-next-card').textContent = currentCardIdx < total - 1 ? '次へ →' : '保存確認 →';
-  document.getElementById('btn-next-card').onclick = currentCardIdx < total - 1 ? () => { saveCardToResult(); nextCard(); } : () => { saveCardToResult(); updateWizardStep(4); renderSaveList(); };
+  const btnNext = document.getElementById('btn-next-card');
+  if (currentCardIdx < total - 1) {
+    btnNext.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+    btnNext.className = 'p-1.5 rounded-lg hover:bg-gray-200 text-gray-500';
+    btnNext.onclick = () => { saveCardToResult(); nextCard(); };
+  } else {
+    btnNext.innerHTML = '保存確認';
+    btnNext.className = 'px-4 py-1.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700';
+    btnNext.onclick = () => { saveCardToResult(); updateWizardStep(4); renderSaveList(); };
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const cf = document.getElementById('card-form');
@@ -684,7 +692,7 @@ function renderSaveList() {
 
 async function saveAll() {
   const checks = document.querySelectorAll('.save-check:checked');
-  if (checks.length === 0) { alert('保存する項目を選択してください'); return; }
+  if (checks.length === 0) { showToast('保存する項目を選択してください', 'error'); return; }
   const btn = document.getElementById('btn-save-all');
   btn.disabled = true;
   btn.textContent = '保存中...';
@@ -709,7 +717,7 @@ async function saveAll() {
   }
   closeWizard();
   loadList();
-  alert(`${saved}件を保存しました`);
+  showToast(`${saved}件を保存しました`, 'success');
 }
 
 // ─── 手動入力モーダル ────────────────────────────────────
@@ -883,6 +891,14 @@ function showReceiptModal(url, payee, date) {
 }
 function closeReceiptModal() {
   document.getElementById('receipt-modal').classList.add('hidden');
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast${type === 'error' ? ' error' : type === 'success' ? ' success' : ''}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
 function openSidebar() {
