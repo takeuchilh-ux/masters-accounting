@@ -249,6 +249,34 @@
   </div>
 </div>
 
+<!-- ====== 詳細モーダル ====== -->
+<div id="detail-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end md:items-center justify-center" onclick="closeDetailModal()">
+  <div class="bg-white w-full max-w-lg md:rounded-2xl rounded-t-2xl shadow-2xl max-h-[92vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white">
+      <h2 id="dm-payee" class="font-bold text-gray-800 text-base truncate pr-4"></h2>
+      <button onclick="closeDetailModal()" class="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <!-- レシート画像 -->
+    <div id="dm-img-wrap" class="hidden px-5 pt-4">
+      <img id="dm-img" src="" alt="レシート" class="w-full object-contain max-h-64 rounded-xl border border-gray-100">
+    </div>
+    <!-- 詳細情報 -->
+    <div class="px-5 py-4 space-y-3">
+      <div class="flex flex-wrap gap-1.5" id="dm-tags"></div>
+      <table class="w-full text-sm">
+        <tbody id="dm-body" class="divide-y divide-gray-50"></tbody>
+      </table>
+    </div>
+    <!-- アクションボタン -->
+    <div class="px-5 pb-5 flex gap-2">
+      <button id="dm-edit-btn" class="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors">編集</button>
+      <button id="dm-del-btn" class="px-4 py-2.5 bg-red-50 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors">削除</button>
+    </div>
+  </div>
+</div>
+
 <!-- ====== 一覧ページ ====== -->
 <main class="max-w-6xl mx-auto px-4 py-5">
   <!-- フィルターバー -->
@@ -810,7 +838,7 @@ async function loadList() {
     const img = r.receipt_image || r.receipt_drive_url;
     const storeColors = {'藤沢事業所':'blue','藤沢市民病院':'indigo','藤沢湘南台病院':'violet','平塚市民病院':'purple','西横浜国際総合病院':'fuchsia','休日診療所':'pink'};
     const c = storeColors[r.store] || 'blue';
-    return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+    return `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow cursor-pointer" onclick='showDetailModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="flex items-start justify-between gap-3">
         <div class="flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
@@ -828,7 +856,7 @@ async function loadList() {
             ${r.amount_8  ? `<span class="text-xs text-gray-400">8%対象:¥${r.amount_8.toLocaleString()}</span>`  : ''}
           </div>
         </div>
-        <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <div class="flex flex-col items-end gap-2 flex-shrink-0" onclick="event.stopPropagation()">
           ${img ? `<button onclick="showReceiptModal('${img}','${(r.payee||'').replace(/'/g,"\\'")}','${r.date||''}')" class="text-blue-600 hover:text-blue-800">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           </button>` : ''}
@@ -865,6 +893,49 @@ function exportCsv() {
   if (from) params.set('from', from);
   if (to) params.set('to', to);
   location.href = '/api/petty-cash/export/csv?' + params;
+}
+
+function showDetailModal(r) {
+  const storeColors = {'藤沢事業所':'#dbeafe','藤沢市民病院':'#e0e7ff','藤沢湘南台病院':'#ede9fe','平塚市民病院':'#f3e8ff','西横浜国際総合病院':'#fce7f3','休日診療所':'#fce7f3'};
+  document.getElementById('dm-payee').textContent = r.payee || '—';
+  // タグ
+  const tags = [];
+  if (r.store) tags.push(`<span style="background:${storeColors[r.store]||'#dbeafe'}" class="text-xs px-2 py-0.5 rounded-full font-medium text-blue-800">${r.store}</span>`);
+  if (r.account_category) tags.push(`<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${r.account_category}</span>`);
+  if (r.purchaser) tags.push(`<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">${r.purchaser}</span>`);
+  document.getElementById('dm-tags').innerHTML = tags.join('');
+  // 詳細テーブル
+  const rows = [
+    ['No.', r.no || '—'],
+    ['日付', r.date || '—'],
+    ['支払先', r.payee || '—'],
+    ['品名', r.item_name || '—'],
+    ['勘定科目', r.account_category || '—'],
+    ['税区分', r.tax_category || '—'],
+    ['10%税抜', r.amount_10 ? `¥${Number(r.amount_10).toLocaleString()}` : '—'],
+    ['10%消費税', r.tax_amount_10 ? `¥${Number(r.tax_amount_10).toLocaleString()}` : '—'],
+    ['8%税抜', r.amount_8 ? `¥${Number(r.amount_8).toLocaleString()}` : '—'],
+    ['8%消費税', r.tax_amount_8 ? `¥${Number(r.tax_amount_8).toLocaleString()}` : '—'],
+    ['合計金額', `<span class="font-bold text-blue-700 text-base">¥${Number(r.total_amount||0).toLocaleString()}</span>`],
+  ].filter(([,v]) => v && v !== '—');
+  document.getElementById('dm-body').innerHTML = rows.map(([k,v]) =>
+    `<tr><td class="py-2 text-xs text-gray-400 w-28 pr-3">${k}</td><td class="py-2 text-sm text-gray-800">${v}</td></tr>`
+  ).join('');
+  // 画像
+  const img = r.receipt_image || r.receipt_drive_url;
+  if (img) {
+    document.getElementById('dm-img').src = img;
+    document.getElementById('dm-img-wrap').classList.remove('hidden');
+  } else {
+    document.getElementById('dm-img-wrap').classList.add('hidden');
+  }
+  // ボタン
+  document.getElementById('dm-edit-btn').onclick = () => { closeDetailModal(); editRow(r); };
+  document.getElementById('dm-del-btn').onclick = () => { closeDetailModal(); deleteRow(r._id); };
+  document.getElementById('detail-modal').classList.remove('hidden');
+}
+function closeDetailModal() {
+  document.getElementById('detail-modal').classList.add('hidden');
 }
 
 function showReceiptModal(url, payee, date) {
