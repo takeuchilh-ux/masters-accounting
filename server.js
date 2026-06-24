@@ -144,23 +144,6 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// 一時デバッグ・リセット（使用後削除）
-app.post('/api/_reset_pw', async (req, res) => {
-  if (req.body.secret !== 'ms-reset-2026') return res.status(403).json({ error: 'forbidden' });
-  try {
-    const { createClient } = require('@supabase/supabase-js');
-    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-    const { data, error } = await sb.from('account_users').select('id,email');
-    const hash0000 = hashPassword('0000');
-    if (data && data.length > 0) {
-      const ids = data.map(u => u.id);
-      await sb.from('account_users').update({ password_hash: hash0000 }).in('id', ids);
-    }
-    res.json({ ok: true, userCount: data?.length || 0, emails: (data||[]).map(u=>u.email), hash: hash0000, supabaseUrl: process.env.SUPABASE_URL, error: error?.message });
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
 
 app.use('/api', requireAuth);
 
