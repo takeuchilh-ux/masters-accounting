@@ -719,11 +719,11 @@ async function saveAll() {
   btn.disabled = true;
   btn.textContent = '保存中...';
   btn.classList.remove('hidden');
-  let saved = 0;
+  let saved = 0, failed = 0;
   for (const ch of checks) {
     const r = wizardResults[parseInt(ch.dataset.idx)];
     try {
-      await fetch('/api/petty-cash', {
+      const res = await fetch('/api/petty-cash', {
         method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           date: r.date, store: r.store, purchaser: r.purchaser, payee: r.payee,
@@ -734,12 +734,15 @@ async function saveAll() {
           receipt_image: r.receipt_image, receipt_drive_url: r.receipt_drive_url,
         })
       });
+      if (res.status === 401) { location.href = '/login.html'; return; }
+      if (!res.ok) { failed++; continue; }
       saved++;
-    } catch(e) { console.error(e); }
+    } catch(e) { failed++; console.error(e); }
   }
   closeWizard();
   loadList();
-  showToast(`${saved}件を保存しました`, 'success');
+  if (failed > 0) showToast(`${saved}件保存、${failed}件失敗しました`, 'error');
+  else showToast(`${saved}件を保存しました`, 'success');
 }
 
 // ─── 手動入力モーダル ────────────────────────────────────
