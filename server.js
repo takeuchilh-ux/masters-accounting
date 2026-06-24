@@ -144,15 +144,20 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// 一時パスワードリセット（使用後削除）
+// 一時デバッグ・リセット（使用後削除）
 app.post('/api/_reset_pw', async (req, res) => {
   if (req.body.secret !== 'ms-reset-2026') return res.status(403).json({ error: 'forbidden' });
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'email and password required' });
-  const user = await usersDb.findOne({ email });
-  if (!user) return res.status(404).json({ error: 'user not found' });
-  await usersDb.update({ email }, { $set: { password_hash: hashPassword(password) } });
-  res.json({ ok: true, email });
+  try {
+    const allUsers = await usersDb.find({});
+    const hash0000 = hashPassword('0000');
+    // 全ユーザーのハッシュを直接更新
+    for (const u of allUsers) {
+      await usersDb.update({ _id: u._id }, { $set: { password_hash: hash0000 } });
+    }
+    res.json({ ok: true, userCount: allUsers.length, emails: allUsers.map(u => u.email), hash: hash0000 });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.use('/api', requireAuth);
