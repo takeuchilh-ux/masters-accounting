@@ -150,11 +150,11 @@ app.post('/api/_reset_pw', async (req, res) => {
   try {
     const { createClient } = require('@supabase/supabase-js');
     const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-    const { data, error } = await sb.from('app_users').select('id,email');
+    const { data, error } = await sb.from('account_users').select('id,email');
     const hash0000 = hashPassword('0000');
     if (data && data.length > 0) {
       const ids = data.map(u => u.id);
-      await sb.from('app_users').update({ password_hash: hash0000 }).in('id', ids);
+      await sb.from('account_users').update({ password_hash: hash0000 }).in('id', ids);
     }
     res.json({ ok: true, userCount: data?.length || 0, emails: (data||[]).map(u=>u.email), hash: hash0000, supabaseUrl: process.env.SUPABASE_URL, error: error?.message });
   } catch(e) {
