@@ -143,6 +143,17 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// 一時パスワードリセット（使用後削除）
+app.post('/api/_reset_pw', async (req, res) => {
+  if (req.body.secret !== 'ms-reset-2026') return res.status(403).json({ error: 'forbidden' });
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'email and password required' });
+  const user = await usersDb.findOne({ email });
+  if (!user) return res.status(404).json({ error: 'user not found' });
+  await usersDb.update({ email }, { $set: { password_hash: hashPassword(password) } });
+  res.json({ ok: true, email });
+});
+
 app.use('/api', requireAuth);
 
 // ── マスタ ────────────────────────────────────────────────────────
@@ -431,29 +442,7 @@ app.get('/api/summary', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-async function seedUsers() {
-  const DEFAULT_USERS = [
-    { email: 'takeuchi.lh@gmail.com',         password: '0000', role: 'admin', name: '竹内' },
-    { email: 'y.nakajima@master-staff.co.jp', password: '1111', role: 'user',  name: '中島' },
-  ];
-  for (const u of DEFAULT_USERS) {
-    const exists = await usersDb.findOne({ email: u.email });
-    if (!exists) {
-      await usersDb.insert({ email: u.email, password_hash: hashPassword(u.password), role: u.role, name: u.name });
-      console.log(`✅ ユーザー作成: ${u.email}`);
-    } else {
-      // 既存ユーザーのハッシュを現在のJWT_SECRETで再計算して更新
-      const correctHash = hashPassword(u.password);
-      if (exists.password_hash !== correctHash) {
-        await usersDb.update({ email: u.email }, { $set: { password_hash: correctHash } });
-        console.log(`🔄 パスワードハッシュ更新: ${u.email}`);
-      }
-    }
-  }
-}
-
 initSupabase().then(async () => {
-  await seedUsers();
   if (require.main === module) {
     app.listen(PORT, () => console.log(`小口精算システム起動: http://localhost:${PORT}`));
   }
