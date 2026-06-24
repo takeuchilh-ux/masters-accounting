@@ -148,13 +148,15 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 app.post('/api/_reset_pw', async (req, res) => {
   if (req.body.secret !== 'ms-reset-2026') return res.status(403).json({ error: 'forbidden' });
   try {
-    const allUsers = await usersDb.find({});
+    const { createClient } = require('@supabase/supabase-js');
+    const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    const { data, error } = await sb.from('app_users').select('id,email');
     const hash0000 = hashPassword('0000');
-    // 全ユーザーのハッシュを直接更新
-    for (const u of allUsers) {
-      await usersDb.update({ _id: u._id }, { $set: { password_hash: hash0000 } });
+    if (data && data.length > 0) {
+      const ids = data.map(u => u.id);
+      await sb.from('app_users').update({ password_hash: hash0000 }).in('id', ids);
     }
-    res.json({ ok: true, userCount: allUsers.length, emails: allUsers.map(u => u.email), hash: hash0000 });
+    res.json({ ok: true, userCount: data?.length || 0, emails: (data||[]).map(u=>u.email), hash: hash0000, supabaseUrl: process.env.SUPABASE_URL, error: error?.message });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
