@@ -37,8 +37,9 @@ const PORT = process.env.PORT || 3000;
 
 const JWT_SECRET = process.env.JWT_SECRET || 'masters-accounting-secret-key-2026';
 
+const PW_SALT = 'ms-pw-salt-2026';
 function hashPassword(password) {
-  return crypto.createHash('sha256').update(password + JWT_SECRET).digest('hex');
+  return crypto.createHash('sha256').update(password + PW_SALT).digest('hex');
 }
 
 function requireAuth(req, res, next) {
