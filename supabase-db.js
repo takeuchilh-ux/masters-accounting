@@ -190,7 +190,7 @@ const collections = {
   commissions: new SupabaseCollection('commissions'),
   transfers:   new SupabaseCollection('transfers'),
   masters:     new SupabaseCollection('masters'),
-  users:       new SupabaseCollection('users'),
+  users:       new SupabaseCollection('app_users'),
 };
 
 module.exports = { ...collections, initSupabase };
