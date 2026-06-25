@@ -372,8 +372,13 @@ const COMBO_DEFS = {
 async function loadMasters() {
   const types = ['store','purchaser','account_category','tax_category'];
   await Promise.all(types.map(async t => {
-    const r = await fetch(`/api/masters?type=${t}`);
-    masterCache[t] = (await r.json()).map(m => m.value);
+    try {
+      const r = await fetch(`/api/masters?type=${t}`);
+      const data = await r.json();
+      masterCache[t] = Array.isArray(data) ? data.map(m => m.value) : [];
+    } catch(e) {
+      masterCache[t] = [];
+    }
   }));
   // フィルター用セレクト更新
   fillFilter('fil-store', masterCache.store);
@@ -610,7 +615,11 @@ async function runOcr() {
   setTimeout(() => { currentCardIdx = 0; updateWizardStep(3); renderCardForm(); }, 800);
 }
 
-function renderCardForm() {
+async function renderCardForm() {
+  // マスタが未ロードなら再取得
+  if (!masterCache.store?.length && !masterCache.purchaser?.length) {
+    await loadMasters();
+  }
   const r = wizardResults[currentCardIdx];
   const total = wizardResults.length;
   document.getElementById('step3-counter').textContent = `${currentCardIdx + 1} / ${total} 枚`;
