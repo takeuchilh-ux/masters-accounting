@@ -145,6 +145,21 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 
+// 一時診断（使用後削除）
+app.get('/api/_diag', async (req, res) => {
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const url = (process.env.SUPABASE_URL || '').trim();
+    const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+    const sb = createClient(url, key);
+    const [m, u] = await Promise.all([
+      sb.from('masters').select('id').limit(3),
+      sb.from('account_users').select('id,email').limit(3),
+    ]);
+    res.json({ masters: { count: m.data?.length, error: m.error?.message }, users: { count: u.data?.length, error: u.error?.message, emails: u.data?.map(x=>x.email) }, url });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.use('/api', requireAuth);
 
 // ── マスタ ────────────────────────────────────────────────────────
