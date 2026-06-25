@@ -165,13 +165,19 @@ function switchTab(type) {
 // ── マスタ操作 ─────────────────────────────────────────────────────
 async function loadList() {
   if (currentType === 'users') { loadUsers(); return; }
-  const r = await fetch(`/api/masters?type=${currentType}`);
-  const rows = await r.json();
   const el = document.getElementById('master-list');
-  if (rows.length === 0) {
-    el.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">まだ登録がありません</p>';
-    return;
-  }
+  try {
+    const r = await fetch(`/api/masters?type=${currentType}`);
+    if (r.status === 401) { location.href = '/login.html'; return; }
+    const rows = await r.json();
+    if (!Array.isArray(rows)) {
+      el.innerHTML = `<p class="text-center text-red-400 py-8 text-sm">エラー: ${rows.error || '取得失敗'}</p>`;
+      return;
+    }
+    if (rows.length === 0) {
+      el.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">まだ登録がありません</p>';
+      return;
+    }
   el.innerHTML = rows.map((r, i) => `
     <div id="row-${r._id}" data-value="${(r.value||'').replace(/"/g,'&quot;')}" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
       <span class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex-shrink-0">${i+1}</span>
@@ -190,6 +196,9 @@ async function loadList() {
         </button>
       </div>
     </div>`).join('');
+  } catch(e) {
+    el.innerHTML = `<p class="text-center text-red-400 py-8 text-sm">エラー: ${e.message}</p>`;
+  }
 }
 
 function startEdit(id) {
