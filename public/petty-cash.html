@@ -891,6 +891,7 @@ async function loadList() {
             ${r.amount_10 ? `<span class="text-xs text-gray-400">10%対象:¥${r.amount_10.toLocaleString()}</span>` : ''}
             ${r.amount_8  ? `<span class="text-xs text-gray-400">8%対象:¥${r.amount_8.toLocaleString()}</span>`  : ''}
           </div>
+          ${r.registration_no ? `<p class="text-xs text-gray-400 mt-1">登録番号: ${r.registration_no}</p>` : ''}
         </div>
         <div class="flex flex-col items-end gap-2 flex-shrink-0" onclick="event.stopPropagation()">
           ${img ? `<button onclick="showReceiptModal('${img}','${(r.payee||'').replace(/'/g,"\\'")}','${r.date||''}')" class="text-blue-600 hover:text-blue-800">
@@ -955,6 +956,7 @@ function showDetailModal(r) {
     ['8%税抜', r.amount_8 ? `¥${Number(r.amount_8).toLocaleString()}` : '—'],
     ['8%消費税', r.tax_amount_8 ? `¥${Number(r.tax_amount_8).toLocaleString()}` : '—'],
     ['合計金額', `<span class="font-bold text-blue-700 text-base">¥${Number(r.total_amount||0).toLocaleString()}</span>`],
+    ['登録番号', r.registration_no || null],
   ].filter(([,v]) => v && v !== '—');
   document.getElementById('dm-body').innerHTML = rows.map(([k,v]) =>
     `<tr><td class="py-2 text-xs text-gray-400 w-28 pr-3">${k}</td><td class="py-2 text-sm text-gray-800">${v}</td></tr>`
