@@ -218,6 +218,11 @@
       </div>
 
       <div>
+        <label class="form-label">登録番号</label>
+        <input type="text" id="f-regno" class="form-input" placeholder="T1234567890123（なければ空欄）">
+      </div>
+
+      <div>
         <label class="form-label">備考</label>
         <input type="text" id="f-notes" class="form-input" placeholder="メモ">
       </div>
@@ -779,6 +784,7 @@ function openManualEntry(data) {
   document.getElementById('f-amount-8').value = data?.amount_8 || '';
   document.getElementById('f-tax-8').value = data?.tax_amount_8 || '';
   document.getElementById('f-total').value = data?.total_amount || '';
+  document.getElementById('f-regno').value = data?.registration_no || '';
   document.getElementById('f-notes').value = data?.notes || '';
   setComboVal('store', data?.store || '');
   setComboVal('purchaser', data?.purchaser || '');
@@ -815,6 +821,7 @@ async function submitForm() {
     tax_amount_8: parseFloat(document.getElementById('f-tax-8').value) || null,
     total_amount: parseFloat(document.getElementById('f-total').value) || null,
     tax_category: getComboVal('tax_category'),
+    registration_no: document.getElementById('f-regno').value.trim() || null,
     notes: document.getElementById('f-notes').value,
     receipt_image: document.getElementById('f-receipt-image').value,
     receipt_drive_url: document.getElementById('f-receipt-drive-url').value,
