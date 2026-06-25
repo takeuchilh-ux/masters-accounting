@@ -362,7 +362,8 @@ app.post('/api/ocr', upload.single('receipt'), async (req, res) => {
   "amount_8": 8%対象の税抜金額（レシートに明記されている場合のみ数値。なければnull）,
   "tax_amount_8": 8%の消費税額（レシートに明記されている場合のみ数値。なければnull）,
   "total_amount": 合計金額（税込）（レシートに記載の最終合計額を数値で。なければnull）,
-  "tax_category": "課税区分（課税/軽減税率（8%）/非課税/不課税）"
+  "tax_category": "課税区分（課税/軽減税率（8%）/非課税/不課税）",
+  "registration_no": "適格請求書発行事業者の登録番号（T+13桁の数字。レシートに記載がなければnull）"
 }
 JSONのみ返してください。` }
         ]

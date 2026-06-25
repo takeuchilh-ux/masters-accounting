@@ -666,7 +666,8 @@ function renderCardForm() {
         <div><label class="form-label text-xs">8%対象 税抜</label><input type="number" id="c-a8-${currentCardIdx}" class="form-input" value="${r.amount_8||''}"></div>
         <div><label class="form-label text-xs">消費税(8%)</label><input type="number" id="c-t8-${currentCardIdx}" class="form-input" value="${r.tax_amount_8||''}"></div>
       </div>
-    </div>`;
+    </div>
+    <div><label class="form-label">登録番号</label><input type="text" id="c-regno-${currentCardIdx}" class="form-input" placeholder="T1234567890123（なければ空欄）" value="${r.registration_no||''}"></div>`;
 }
 
 function saveCardToResult() {
@@ -679,10 +680,11 @@ function saveCardToResult() {
   r.payee        = document.getElementById(`c-payee-${i}`)?.value || '';
   r.item_name    = document.getElementById(`c-item-${i}`)?.value || '';
   r.account_category = document.getElementById(`c-account-${i}`)?.value || '';
-  r.amount_10    = parseFloat(document.getElementById(`c-a10-${i}`)?.value) || null;
-  r.tax_amount_10= parseFloat(document.getElementById(`c-t10-${i}`)?.value) || null;
-  r.amount_8     = parseFloat(document.getElementById(`c-a8-${i}`)?.value)  || null;
-  r.tax_amount_8 = parseFloat(document.getElementById(`c-t8-${i}`)?.value)  || null;
+  r.amount_10      = parseFloat(document.getElementById(`c-a10-${i}`)?.value) || null;
+  r.tax_amount_10  = parseFloat(document.getElementById(`c-t10-${i}`)?.value) || null;
+  r.amount_8       = parseFloat(document.getElementById(`c-a8-${i}`)?.value)  || null;
+  r.tax_amount_8   = parseFloat(document.getElementById(`c-t8-${i}`)?.value)  || null;
+  r.registration_no = document.getElementById(`c-regno-${i}`)?.value.trim() || null;
 }
 
 function nextCard() {
@@ -732,17 +734,22 @@ async function saveAll() {
           amount_8: r.amount_8, tax_amount_8: r.tax_amount_8,
           total_amount: r.total_amount, tax_category: r.tax_category,
           receipt_image: r.receipt_image, receipt_drive_url: r.receipt_drive_url,
+          registration_no: r.registration_no || null,
         })
       });
       if (res.status === 401) { location.href = '/login.html'; return; }
-      if (!res.ok) { failed++; continue; }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        console.error('save error:', res.status, d);
+        showToast(`保存エラー: ${d.error || res.status}`, 'error');
+        failed++; continue;
+      }
       saved++;
-    } catch(e) { failed++; console.error(e); }
+    } catch(e) { failed++; showToast(`保存エラー: ${e.message}`, 'error'); console.error(e); }
   }
   closeWizard();
   loadList();
-  if (failed > 0) showToast(`${saved}件保存、${failed}件失敗しました`, 'error');
-  else showToast(`${saved}件を保存しました`, 'success');
+  if (failed === 0) showToast(`${saved}件を保存しました`, 'success');
 }
 
 // ─── 手動入力モーダル ────────────────────────────────────
