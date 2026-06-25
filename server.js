@@ -145,29 +145,6 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
 });
 
 
-// 一時診断（使用後削除）
-app.get('/api/_diag', async (req, res) => {
-  try {
-    const { createClient } = require('@supabase/supabase-js');
-    const url = (process.env.SUPABASE_URL || '').trim();
-    const key = (process.env.SUPABASE_ANON_KEY || '').trim();
-    const sb = createClient(url, key);
-    const [m, u, p] = await Promise.all([
-      sb.from('masters').select('id').limit(3),
-      sb.from('account_users').select('id,email').limit(3),
-      sb.from('petty_cash').select('id').limit(3),
-    ]);
-    const srKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
-    let srTest = null;
-    if (srKey) {
-      const sb2 = createClient(url, srKey);
-      const r2 = await sb2.from('masters').select('id').limit(3);
-      srTest = { count: r2.data?.length, error: r2.error?.message };
-    }
-    res.json({ masters: { count: m.data?.length, error: m.error?.message }, users: { count: u.data?.length, error: u.error?.message, emails: u.data?.map(x=>x.email) }, petty_cash: { count: p.data?.length, error: p.error?.message }, masters_sr: srTest, hasServiceKey: !!srKey, url });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
 app.use('/api', requireAuth);
 
 // ── マスタ ────────────────────────────────────────────────────────
